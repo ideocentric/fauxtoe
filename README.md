@@ -145,7 +145,34 @@ log show --last 10m --predicate 'subsystem == "com.ideocentric.fauxto"'
 | `fauxto/Views/` | Preview, capture bar, controls panel, naming sheet and Settings |
 | `fauxto/AppModel.swift` | App state: camera selection, capture, interval runs, saving and recent photos |
 | `fauxto/FauxtoCommands.swift` | Menu bar commands |
-| `fauxtoTests/` | Unit tests for naming, rendering and encoding |
+| `fauxto/*.xcstrings` | String Catalogs holding all user-facing text |
+| `fauxtoTests/` | Unit tests for naming, rendering, encoding and localization |
+| `scripts/sync-strings.sh` | Adds new interface strings to the String Catalog from the command line |
+
+## Translating
+
+fauxto is ready for translation, though English is the only language so far.
+All user-facing text lives in two String Catalogs:
+
+- `fauxto/Localizable.xcstrings`: the app's interface and messages.
+- `fauxto/InfoPlist.xcstrings`: the camera permission prompt and the About box.
+
+To add a language, open the project in Xcode, choose the project in the
+navigator, add the language under Info › Localizations, then fill in the
+catalogs. Some strings have plural forms, for example "%lld photos"; the catalog
+editor shows the forms your language needs. The file name tokens `{date}`,
+`{time}`, `{n}` and `{camera}` must stay as written.
+
+Tools that read `.xcstrings` files, such as Weblate or Crowdin, can be used
+instead of Xcode.
+
+Xcode's editor adds new strings to the catalog as you write code. When working
+from the command line, run `scripts/sync-strings.sh` after changing any
+interface text.
+
+To check a layout without translations, edit the scheme's Run options and set
+App Language to Accented Pseudolanguage (anything not accented was missed),
+Double-Length Pseudolanguage (finds truncation) or Right-to-Left Pseudolanguage.
 
 ## License
 
@@ -170,5 +197,5 @@ version over a network.
 
 ### Contributing
 
-Contributions are welcome. By submitting a change you agree that it is licensed
-under the same terms, AGPL-3.0-or-later.
+Contributions are welcome, translations included. By submitting a change you
+agree that it is licensed under the same terms, AGPL-3.0-or-later.

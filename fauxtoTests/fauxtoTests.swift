@@ -145,3 +145,26 @@ struct PhotoRendererTests {
         #expect(tiff?[kCGImagePropertyTIFFModel as String] as? String == "Test Camera")
     }
 }
+
+/// Checks strings resolve through the string catalog, including plural variants. English only:
+/// other languages fall back to these until they are translated.
+struct LocalizationTests {
+    @Test func intervalTitlesUsePluralForms() {
+        #expect(Preferences.intervalTitle(0) == "Single Photo")
+        #expect(Preferences.intervalTitle(1) == "Every Second")
+        #expect(Preferences.intervalTitle(5) == "Every 5 Seconds")
+    }
+
+    @Test func formatTitlesComeFromTheCatalog() {
+        let format = CameraFormat(id: 0, photoWidth: 1920, photoHeight: 1080, videoWidth: 1920,
+                                  videoHeight: 1080, maxFrameRate: 30)
+        #expect(format.title == "1920 × 1080 (2.1 MP)")
+        #expect(format.detail == "Preview at 30 fps")
+    }
+
+    @Test func modelTextIsLocalized() {
+        #expect(NamingScheme.numbered.displayName == "Name and number")
+        #expect(Rotation.clockwise90.displayName == "90° Clockwise")
+        #expect(CameraError.noImage.errorDescription == "The camera didn't return an image.")
+    }
+}

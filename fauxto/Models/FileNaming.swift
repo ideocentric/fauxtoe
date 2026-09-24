@@ -19,22 +19,26 @@ nonisolated enum NamingScheme: String, CaseIterable, Identifiable, Sendable {
 
     var displayName: String {
         switch self {
-        case .template: "Date and time"
-        case .numbered: "Name and number"
+        case .template: String(localized: "Date and time", comment: "Naming scheme: names built from a date/time template")
+        case .numbered: String(localized: "Name and number", comment: "Naming scheme: a fixed name plus a counter, e.g. image-001")
         }
     }
 }
 
 /// Builds file names from the naming template and keeps saves from overwriting existing files.
 nonisolated enum FileNaming {
-    static let defaultTemplate = "fauxto {date} at {time}"
+    /// Translated for new users; `Preferences` stores the value on first launch so a later language
+    /// change doesn't alter an existing setup.
+    static let defaultTemplate = String(
+        localized: "fauxto {date} at {time}",
+        comment: "Default file name template. Keep the {date} and {time} tokens exactly as written; translate the rest.")
 
     /// Tokens the template understands, for display in Settings.
     static let tokens: [(token: String, meaning: String)] = [
-        ("{date}", "Date, e.g. 2026-09-23"),
-        ("{time}", "Time, e.g. 14.05.32"),
-        ("{n}", "Sequence number, e.g. 0007"),
-        ("{camera}", "Camera name"),
+        ("{date}", String(localized: "Date, e.g. 2026-09-23", comment: "Naming token description")),
+        ("{time}", String(localized: "Time, e.g. 14.05.32", comment: "Naming token description")),
+        ("{n}", String(localized: "Sequence number, e.g. 0007", comment: "Naming token description")),
+        ("{camera}", String(localized: "Camera name", comment: "Naming token description")),
     ]
 
     static func render(template: String, date: Date, sequence: Int, camera: String) -> String {
@@ -82,7 +86,10 @@ nonisolated enum FileNaming {
         return candidate
     }
 
-    static let defaultRoot = "image"
+    /// Translated for new users; stored on first launch, like `defaultTemplate`.
+    static let defaultRoot = String(
+        localized: "image",
+        comment: "Default name root for numbered file names (image-001). Lowercase, one word, no spaces.")
 
     /// `root-001`. Numbers keep growing past 999 (`root-1000`).
     static func numberedName(root: String, number: Int) -> String {

@@ -62,10 +62,11 @@ struct ShutterButton: View {
             .buttonStyle(ShutterButtonStyle(tint: .red))
             .keyboardShortcut(.space, modifiers: [])
             .disabled(!model.canCapture)
+            // Whole sentences per case (not a fragment spliced in) so translators see the full text.
             .help(interval > 0
-                  ? "Start interval shooting: a photo now, then \(Preferences.intervalTitle(interval).lowercased()) (Space or ⌘T)"
-                  : "Take a photo (Space or ⌘T)")
-            .accessibilityLabel(interval > 0 ? "Start Interval Shooting" : "Take Photo")
+                  ? Text("Start interval shooting: a photo now, then one every \(interval) seconds (Space or ⌘T)")
+                  : Text("Take a photo (Space or ⌘T)"))
+            .accessibilityLabel(interval > 0 ? Text("Start Interval Shooting") : Text("Take Photo"))
         }
     }
 }
@@ -103,7 +104,8 @@ struct IntervalPicker: View {
     }
 }
 
-/// Recent photos, oldest on the left and newest on the right. Shows only as many thumbnails as fit
+/// Recent photos, oldest on the leading side and newest on the trailing side (left to right in
+/// English, right to left in Arabic or Hebrew). Shows only as many thumbnails as fit
 /// whole, and pages through the rest with the arrows, so a thumbnail is never cut off at the edge.
 /// It follows the newest photo unless the user has paged back.
 struct RecentPhotosStrip: View {
@@ -133,7 +135,7 @@ struct RecentPhotosStrip: View {
                 Button {
                     pinnedFirst = max(0, first - capacity)
                 } label: {
-                    Label("Older Photos", systemImage: "chevron.left")
+                    Label("Older Photos", systemImage: "chevron.backward")
                 }
                 .disabled(first == 0)
                 .help("Show older photos")
@@ -151,7 +153,7 @@ struct RecentPhotosStrip: View {
                     let next = first + capacity
                     pinnedFirst = next >= lastPageStart ? nil : next
                 } label: {
-                    Label("Newer Photos", systemImage: "chevron.right")
+                    Label("Newer Photos", systemImage: "chevron.forward")
                 }
                 .disabled(first >= lastPageStart)
                 .help("Show newer photos")

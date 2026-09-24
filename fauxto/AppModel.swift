@@ -207,7 +207,7 @@ final class AppModel {
             for await note in center.notifications(named: AVCaptureSession.runtimeErrorNotification) {
                 guard let self else { return }
                 let error = note.userInfo?[AVCaptureSessionErrorKey] as? Error
-                cameraState = .failed(error?.localizedDescription ?? "The camera stopped unexpectedly.")
+                cameraState = .failed(error?.localizedDescription ?? String(localized: "The camera stopped unexpectedly."))
             }
         })
     }
@@ -315,7 +315,7 @@ final class AppModel {
             }.value
 
             let date = Date.now
-            let camera = selectedDevice?.name ?? "Camera"
+            let camera = selectedDevice?.name ?? String(localized: "Camera", comment: "Fallback camera name")
             let defaultName = nextDefaultName(date: date, camera: camera, reserve: true)
             // A numbered root is itself the series; a typed name only continues in template mode.
             let suggestedName = preferences.namingScheme == .template
@@ -333,7 +333,7 @@ final class AppModel {
             }
             return await save(pending, as: pending.defaultName)
         } catch {
-            errorMessage = "The photo couldn't be taken. \(error.localizedDescription)"
+            errorMessage = String(localized: "The photo couldn't be taken. \(error.localizedDescription)", comment: "The argument is the system's explanation")
             return false
         }
     }
@@ -375,7 +375,7 @@ final class AppModel {
             if recentPhotos.count > Self.maxRecentPhotos { recentPhotos.removeFirst() }
             return true
         } catch {
-            errorMessage = "The photo couldn't be saved to \(saveLocation.displayPath). \(error.localizedDescription)"
+            errorMessage = String(localized: "The photo couldn't be saved to \(saveLocation.displayPath). \(error.localizedDescription)", comment: "Arguments: the folder path, then the system's explanation")
             return false
         }
     }
@@ -389,7 +389,7 @@ final class AppModel {
                 template: preferences.nameTemplate,
                 date: date,
                 sequence: preferences.peekSequenceNumber,
-                camera: camera ?? selectedDevice?.name ?? "Camera")
+                camera: camera ?? selectedDevice?.name ?? String(localized: "Camera", comment: "Fallback camera name"))
         case .numbered:
             let root = preferences.effectiveNameRoot
             let existing = (try? FileManager.default.contentsOfDirectory(atPath: saveLocation.folderURL.path)) ?? []
@@ -454,7 +454,11 @@ final class AppModel {
     private func stillExists(_ photo: SavedPhoto) -> Bool {
         if FileManager.default.fileExists(atPath: photo.url.path) { return true }
         recentPhotos.removeAll { $0.id == photo.id }
-        errorMessage = "“\(photo.url.lastPathComponent)” is no longer in \((photo.url.deletingLastPathComponent().path as NSString).abbreviatingWithTildeInPath). It was moved or deleted outside fauxto, so it has been removed from recent photos."
+        let fileName = photo.url.lastPathComponent
+        let folder = (photo.url.deletingLastPathComponent().path as NSString).abbreviatingWithTildeInPath
+        errorMessage = String(
+            localized: "“\(fileName)” is no longer in \(folder). It was moved or deleted outside fauxto, so it has been removed from recent photos.",
+            comment: "Arguments: the file name, then its folder")
         return false
     }
 }

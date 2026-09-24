@@ -81,8 +81,8 @@ nonisolated enum PhotoRenderer {
 
         var errorDescription: String? {
             switch self {
-            case .unsupportedFormat(let format): "This Mac can't write \(format.displayName) files."
-            case .encodingFailed(let format): "The photo couldn't be encoded as \(format.displayName)."
+            case .unsupportedFormat(let format): String(localized: "This Mac can't write \(format.displayName) files.", comment: "The argument is a file format, e.g. HEIC")
+            case .encodingFailed(let format): String(localized: "The photo couldn't be encoded as \(format.displayName).", comment: "The argument is a file format, e.g. HEIC")
             }
         }
     }

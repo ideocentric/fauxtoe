@@ -67,10 +67,10 @@ nonisolated enum Rotation: Int, CaseIterable, Identifiable, Sendable {
 
     var displayName: String {
         switch self {
-        case .none: "None"
-        case .clockwise90: "90° Clockwise"
+        case .none: String(localized: "None", comment: "No rotation")
+        case .clockwise90: String(localized: "90° Clockwise")
         case .upsideDown: "180°"
-        case .clockwise270: "90° Counterclockwise"
+        case .clockwise270: String(localized: "90° Counterclockwise")
         }
     }
 

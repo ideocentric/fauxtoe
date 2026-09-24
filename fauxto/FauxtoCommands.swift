@@ -16,7 +16,11 @@ struct FauxtoCommands: Commands {
 
     var body: some Commands {
         CommandGroup(replacing: .newItem) {
-            Button(preferences.intervalSeconds > 0 ? "Start Interval Shooting" : "Take Photo") { model.takePhoto() }
+            Button {
+                model.takePhoto()
+            } label: {
+                preferences.intervalSeconds > 0 ? Text("Start Interval Shooting") : Text("Take Photo")
+            }
                 .keyboardShortcut("t")
                 .disabled(!model.canCapture)
             Button("Stop Interval Shooting") { model.stopShooting() }
@@ -68,8 +72,10 @@ struct FauxtoCommands: Commands {
         }
 
         CommandGroup(after: .toolbar) {
-            Button(preferences.showControls ? "Hide Camera Controls" : "Show Camera Controls") {
+            Button {
                 preferences.showControls.toggle()
+            } label: {
+                preferences.showControls ? Text("Hide Camera Controls") : Text("Show Camera Controls")
             }
             .keyboardShortcut("i", modifiers: [.command, .option])
         }

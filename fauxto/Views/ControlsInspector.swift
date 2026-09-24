@@ -103,7 +103,7 @@ struct ControlsInspector: View {
                 }
                 .disabled(model.isShootingInterval)
                 if preferences.intervalSeconds > 0 {
-                    Text("The shutter takes a photo now, then another \(Preferences.intervalTitle(preferences.intervalSeconds).lowercased()) until you stop it. Photos save without asking for a name.")
+                    Text("The shutter takes a photo now, then another every \(preferences.intervalSeconds) seconds until you stop it. Photos save without asking for a name.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

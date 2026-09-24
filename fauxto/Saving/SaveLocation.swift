@@ -46,8 +46,8 @@ final class SaveLocation {
 
     func chooseFolder() {
         let panel = NSOpenPanel()
-        panel.title = "Choose Save Folder"
-        panel.prompt = "Choose"
+        panel.title = String(localized: "Choose Save Folder")
+        panel.prompt = String(localized: "Choose", comment: "Button that confirms the chosen save folder")
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.canCreateDirectories = true

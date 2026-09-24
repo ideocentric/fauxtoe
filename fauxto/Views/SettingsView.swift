@@ -59,9 +59,9 @@ private struct SavingSettings: View {
                 NamingControls(model: model, showsTemplateHelp: true)
                 Toggle("Ask for a name after each photo", isOn: $preferences.askForName)
             } footer: {
-                Text(preferences.namingScheme == .numbered
-                     ? "Numbering continues from the highest number already in the folder. Existing files are never overwritten."
-                     : "When you type your own name, the next photo suggests the next name in the series, such as board-02 after board-01. Existing files are never overwritten.")
+                (preferences.namingScheme == .numbered
+                 ? Text("Numbering continues from the highest number already in the folder. Existing files are never overwritten.")
+                 : Text("When you type your own name, the next photo suggests the next name in the series, such as board-02 after board-01. Existing files are never overwritten."))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

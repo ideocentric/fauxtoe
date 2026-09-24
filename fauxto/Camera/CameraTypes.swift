@@ -28,20 +28,26 @@ nonisolated struct CameraFormat: Identifiable, Hashable, Sendable {
     /// Stable across launches, unlike `id`.
     var key: String { "\(photoWidth)x\(photoHeight)/\(videoWidth)x\(videoHeight)" }
 
+    /// Pixel sizes are inserted as plain digits: a localized number would add a thousands separator
+    /// ("1,920 × 1,080"), which isn't how resolutions are written.
+    var size: String { "\(photoWidth) × \(photoHeight)" }
+    var videoSize: String { "\(videoWidth) × \(videoHeight)" }
+
     var megapixels: Double { Double(photoWidth * photoHeight) / 1_000_000 }
 
     var title: String {
-        "\(photoWidth) × \(photoHeight)  (\(megapixels.formatted(.number.precision(.fractionLength(1)))) MP)"
+        let megapixels = megapixels.formatted(.number.precision(.fractionLength(1)))
+        return String(localized: "\(size) (\(megapixels) MP)", comment: "Resolution menu item. Arguments: width × height, then megapixels")
     }
 
-    var shortTitle: String { "\(photoWidth) × \(photoHeight)" }
+    var shortTitle: String { size }
 
     var detail: String {
         let fps = maxFrameRate.formatted(.number.precision(.fractionLength(0...1)))
         if photoWidth == videoWidth && photoHeight == videoHeight {
-            return "Preview at \(fps) fps"
+            return String(localized: "Preview at \(fps) fps", comment: "Frame rate of the live preview")
         }
-        return "Preview \(videoWidth) × \(videoHeight) at \(fps) fps"
+        return String(localized: "Preview \(videoSize) at \(fps) fps", comment: "Arguments: preview width × height, then frame rate")
     }
 }
 
@@ -83,10 +89,10 @@ nonisolated enum CameraError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .deviceUnavailable: "The camera is no longer available."
-        case .cannotAddInput: "The camera couldn't be opened. It may be in use by another app."
-        case .cannotAddOutput: "The camera can't take still photos."
-        case .noImage: "The camera didn't return an image."
+        case .deviceUnavailable: String(localized: "The camera is no longer available.")
+        case .cannotAddInput: String(localized: "The camera couldn't be opened. It may be in use by another app.")
+        case .cannotAddOutput: String(localized: "The camera can't take still photos.")
+        case .noImage: String(localized: "The camera didn't return an image.")
         }
     }
 }
@@ -94,10 +100,10 @@ nonisolated enum CameraError: LocalizedError {
 extension AVCaptureDevice.FocusMode {
     nonisolated var displayName: String {
         switch self {
-        case .locked: "Locked"
-        case .autoFocus: "Auto (Once)"
-        case .continuousAutoFocus: "Continuous"
-        @unknown default: "Unknown"
+        case .locked: String(localized: "Locked", comment: "Camera focus, exposure or white balance mode")
+        case .autoFocus: String(localized: "Auto (Once)", comment: "Camera focus, exposure or white balance mode")
+        case .continuousAutoFocus: String(localized: "Continuous", comment: "Camera focus, exposure or white balance mode")
+        @unknown default: String(localized: "Unknown", comment: "Camera focus, exposure or white balance mode")
         }
     }
 }
@@ -105,11 +111,11 @@ extension AVCaptureDevice.FocusMode {
 extension AVCaptureDevice.ExposureMode {
     nonisolated var displayName: String {
         switch self {
-        case .locked: "Locked"
-        case .autoExpose: "Auto (Once)"
-        case .continuousAutoExposure: "Continuous"
-        case .custom: "Custom"
-        @unknown default: "Unknown"
+        case .locked: String(localized: "Locked", comment: "Camera focus, exposure or white balance mode")
+        case .autoExpose: String(localized: "Auto (Once)", comment: "Camera focus, exposure or white balance mode")
+        case .continuousAutoExposure: String(localized: "Continuous", comment: "Camera focus, exposure or white balance mode")
+        case .custom: String(localized: "Custom", comment: "Camera focus, exposure or white balance mode")
+        @unknown default: String(localized: "Unknown", comment: "Camera focus, exposure or white balance mode")
         }
     }
 }
@@ -117,10 +123,10 @@ extension AVCaptureDevice.ExposureMode {
 extension AVCaptureDevice.WhiteBalanceMode {
     nonisolated var displayName: String {
         switch self {
-        case .locked: "Locked"
-        case .autoWhiteBalance: "Auto (Once)"
-        case .continuousAutoWhiteBalance: "Continuous"
-        @unknown default: "Unknown"
+        case .locked: String(localized: "Locked", comment: "Camera focus, exposure or white balance mode")
+        case .autoWhiteBalance: String(localized: "Auto (Once)", comment: "Camera focus, exposure or white balance mode")
+        case .continuousAutoWhiteBalance: String(localized: "Continuous", comment: "Camera focus, exposure or white balance mode")
+        @unknown default: String(localized: "Unknown", comment: "Camera focus, exposure or white balance mode")
         }
     }
 }

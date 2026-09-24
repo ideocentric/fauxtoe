@@ -33,7 +33,8 @@ struct NamePhotoSheet: View {
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .accessibilityLabel("The photo you just took")
 
-            Text("\(pending.image.width) × \(pending.image.height) · \(preferences.fileFormat.displayName)")
+            Text("\("\(pending.image.width) × \(pending.image.height)") · \(preferences.fileFormat.displayName)",
+                 comment: "Photo size (width × height), then file format")
                 .font(.caption)
                 .foregroundStyle(.secondary)
 

@@ -50,21 +50,24 @@ final class Preferences {
 
     static func intervalTitle(_ seconds: Int) -> String {
         switch seconds {
-        case 0: "Single Photo"
-        case 1: "Every Second"
-        default: "Every \(seconds) Seconds"
+        case 0: String(localized: "Single Photo", comment: "Interval setting: take one photo per press")
+        // One key with plural forms in the catalog; English uses "Every Second" for 1.
+        default: String(localized: "Every \(seconds) Seconds", comment: "Interval setting: time between photos")
         }
     }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
+        // Stored rather than registered, so they stay fixed in the language of first launch.
+        for (key, value) in [(Key.nameTemplate, FileNaming.defaultTemplate), (Key.nameRoot, FileNaming.defaultRoot)]
+        where defaults.object(forKey: key) == nil {
+            defaults.set(value, forKey: key)
+        }
         defaults.register(defaults: [
             Key.fileFormat: ImageFileFormat.available.contains(.heic) ? ImageFileFormat.heic.rawValue : ImageFileFormat.jpeg.rawValue,
             Key.quality: 0.9,
             Key.askForName: true,
-            Key.nameTemplate: FileNaming.defaultTemplate,
             Key.namingScheme: NamingScheme.template.rawValue,
-            Key.nameRoot: FileNaming.defaultRoot,
             Key.sequence: 1,
             Key.playShutterSound: true,
             Key.intervalSeconds: 0,

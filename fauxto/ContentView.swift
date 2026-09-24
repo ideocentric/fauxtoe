@@ -131,10 +131,10 @@ struct IntervalBadge: View {
             Circle()
                 .fill(.red)
                 .frame(width: 8, height: 8)
-            Text(shots == 1 ? "1 photo" : "\(shots) photos")
+            Text("\(shots) photos", comment: "Interval shooting badge: photos taken so far")
             if let secondsUntilNext {
                 Text("·")
-                Text("next in \(secondsUntilNext)s")
+                Text("next in \(secondsUntilNext)s", comment: "Interval shooting badge: seconds until the next photo")
                     .contentTransition(.numericText(countsDown: true))
                     .animation(.default, value: secondsUntilNext)
             }
@@ -145,7 +145,7 @@ struct IntervalBadge: View {
         .padding(.vertical, 6)
         .background(.black.opacity(0.55), in: Capsule())
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Interval shooting, \(shots) photos taken")
+        .accessibilityLabel(Text("Interval shooting, \(shots) photos taken"))
     }
 }
 
