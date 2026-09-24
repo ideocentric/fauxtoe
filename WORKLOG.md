@@ -19,3 +19,9 @@
 - Repo stays private until the icon graphics are done; making it public is a pending decision.
 
 **Next step:** Add the app icon: place the icon PNGs (16, 32, 128, 256 and 512 pt at 1x and 2x) in `fauxto/Assets.xcassets/AppIcon.appiconset/` and list them in its `Contents.json`, build with `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project fauxto.xcodeproj -scheme fauxto build`, commit, push, then ask whether to make `ideocentric/fauxto` public.
+
+## 2026-09-24 13:45 — Renamed fauxto to fauxtoe
+**Completed:** Full rename: project, targets, scheme, folders (`fauxtoe/`, `fauxtoeTests/`, `fauxtoeUITests/`), Swift module, bundle IDs (`com.ideocentric.fauxtoe`), log subsystem, default save folder (`~/Pictures/fauxtoe`), default name template, UI strings and README. Entries above this one use the old name and paths.
+**In flight:** GitHub repo rename (`ideocentric/fauxto` to `ideocentric/fauxtoe`), `origin` URL update, and moving the local checkout folder, pending go-ahead.
+**Open questions:** `fauxtoe.xcodeproj/xcuserdata/.../xcschememanagement.plist` has been tracked since the initial commit despite `.gitignore`; untracking it is undecided.
+**Next step:** As in the previous entry, with `fauxto/` read as `fauxtoe/`: add the app icon to `fauxtoe/Assets.xcassets/AppIcon.appiconset/`.

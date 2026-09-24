@@ -1,4 +1,4 @@
-# fauxto
+# fauxtoe
 
 A small macOS camera app for taking stills with whatever camera is near your
 desk: a USB webcam over a circuit board, a camera on a desktop microscope, or a
@@ -39,21 +39,21 @@ shooting for stop motion and time-lapse.
 
 ## Building
 
-Open `fauxto.xcodeproj` in Xcode and run the `fauxto` scheme. The first launch
+Open `fauxtoe.xcodeproj` in Xcode and run the `fauxtoe` scheme. The first launch
 asks for camera access.
 
 From the command line:
 
 ```sh
-xcodebuild -project fauxto.xcodeproj -scheme fauxto build
-xcodebuild -project fauxto.xcodeproj -scheme fauxto -only-testing:fauxtoTests test
+xcodebuild -project fauxtoe.xcodeproj -scheme fauxtoe build
+xcodebuild -project fauxtoe.xcodeproj -scheme fauxtoe -only-testing:fauxtoeTests test
 ```
 
 If `xcodebuild` reports that the active developer directory is the Command Line
 Tools, prefix the command with
 `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
 
-## Using fauxto
+## Using fauxtoe
 
 ### Keyboard shortcuts
 
@@ -71,7 +71,7 @@ In the naming sheet, Return saves and Escape discards.
 
 ### Where photos are saved
 
-Photos go to `~/Pictures/fauxto` unless you choose another folder, either from
+Photos go to `~/Pictures/fauxtoe` unless you choose another folder, either from
 the Saving section of the controls panel or from Settings. A chosen folder is
 remembered across launches, and Use Default switches back.
 
@@ -80,7 +80,7 @@ remembered across launches, and Use Default switches back.
 There are two naming schemes, set in the controls panel or in Settings. Both
 show the name the next photo will get.
 
-- **Date and time** uses a template, by default `fauxto {date} at {time}`. The
+- **Date and time** uses a template, by default `fauxtoe {date} at {time}`. The
   template understands `{date}` (2026-09-23), `{time}` (14.05.32), `{n}` (a
   sequence number, 0007) and `{camera}` (the camera's name). If you type your own
   name in the sheet, the next photo suggests the next name in that series, so
@@ -117,13 +117,13 @@ video tools can import directly.
   driver reports, and most UVC webcams report none. The controls panel says so
   when a camera has nothing to adjust. Direct UVC control would need a separate
   USB implementation.
-- **The camera's own photo metadata is not available on macOS.** fauxto writes
+- **The camera's own photo metadata is not available on macOS.** fauxtoe writes
   the capture time, camera name and software name into each file instead.
 - **Zoom and exposure compensation are not available** in AVFoundation on macOS.
 
 ## Privacy
 
-fauxto is sandboxed. It can use the camera, read and write `~/Pictures`, and
+fauxtoe is sandboxed. It can use the camera, read and write `~/Pictures`, and
 read and write only the folders you choose. Photos never leave your Mac.
 
 ## Troubleshooting
@@ -132,30 +132,30 @@ Session start and stop, and each step of quitting, are written to the system
 log:
 
 ```sh
-log show --last 10m --predicate 'subsystem == "com.ideocentric.fauxto"'
+log show --last 10m --predicate 'subsystem == "com.ideocentric.fauxtoe"'
 ```
 
 ## Project layout
 
 | Path | Contents |
 | --- | --- |
-| `fauxto/Camera/` | `CaptureEngine`, which owns the capture session, and the camera value types |
-| `fauxto/Saving/` | Rotation, mirroring and encoding (`PhotoRenderer`), and the save folder (`SaveLocation`) |
-| `fauxto/Models/` | Output formats, file naming and user preferences |
-| `fauxto/Views/` | Preview, capture bar, controls panel, naming sheet and Settings |
-| `fauxto/AppModel.swift` | App state: camera selection, capture, interval runs, saving and recent photos |
-| `fauxto/FauxtoCommands.swift` | Menu bar commands |
-| `fauxto/*.xcstrings` | String Catalogs holding all user-facing text |
-| `fauxtoTests/` | Unit tests for naming, rendering, encoding and localization |
+| `fauxtoe/Camera/` | `CaptureEngine`, which owns the capture session, and the camera value types |
+| `fauxtoe/Saving/` | Rotation, mirroring and encoding (`PhotoRenderer`), and the save folder (`SaveLocation`) |
+| `fauxtoe/Models/` | Output formats, file naming and user preferences |
+| `fauxtoe/Views/` | Preview, capture bar, controls panel, naming sheet and Settings |
+| `fauxtoe/AppModel.swift` | App state: camera selection, capture, interval runs, saving and recent photos |
+| `fauxtoe/FauxtoeCommands.swift` | Menu bar commands |
+| `fauxtoe/*.xcstrings` | String Catalogs holding all user-facing text |
+| `fauxtoeTests/` | Unit tests for naming, rendering, encoding and localization |
 | `scripts/sync-strings.sh` | Adds new interface strings to the String Catalog from the command line |
 
 ## Translating
 
-fauxto is ready for translation, though English is the only language so far.
+fauxtoe is ready for translation, though English is the only language so far.
 All user-facing text lives in two String Catalogs:
 
-- `fauxto/Localizable.xcstrings`: the app's interface and messages.
-- `fauxto/InfoPlist.xcstrings`: the camera permission prompt and the About box.
+- `fauxtoe/Localizable.xcstrings`: the app's interface and messages.
+- `fauxtoe/InfoPlist.xcstrings`: the camera permission prompt and the About box.
 
 To add a language, open the project in Xcode, choose the project in the
 navigator, add the language under Info › Localizations, then fill in the
@@ -178,19 +178,19 @@ Double-Length Pseudolanguage (finds truncation) or Right-to-Left Pseudolanguage.
 
 Copyright (C) 2026 Matt Comeione
 
-fauxto is free software: you can redistribute it and/or modify it under the
+fauxtoe is free software: you can redistribute it and/or modify it under the
 terms of the GNU Affero General Public License as published by the Free
 Software Foundation, either version 3 of the License, or (at your option) any
 later version.
 
-fauxto is distributed in the hope that it will be useful, but WITHOUT ANY
+fauxtoe is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
 
 The full text is in [LICENSE](LICENSE). Each source file carries the SPDX
 identifier `AGPL-3.0-or-later`.
 
-In short: you may use, study, share and change fauxto, but if you distribute it,
+In short: you may use, study, share and change fauxtoe, but if you distribute it,
 or a modified version, you must make the complete corresponding source available
 under the same license. The same applies if you let people use a modified
 version over a network.
