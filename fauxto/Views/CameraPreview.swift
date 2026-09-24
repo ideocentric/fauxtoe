@@ -2,6 +2,9 @@
 //  CameraPreview.swift
 //  fauxto
 //
+//  Copyright (C) 2026 Matt Comeione
+//  SPDX-License-Identifier: AGPL-3.0-or-later
+//
 
 import AVFoundation
 import SwiftUI

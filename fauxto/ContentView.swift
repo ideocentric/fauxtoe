@@ -2,6 +2,9 @@
 //  ContentView.swift
 //  fauxto
 //
+//  Copyright (C) 2026 Matt Comeione
+//  SPDX-License-Identifier: AGPL-3.0-or-later
+//
 //  Created by Matt Comeione on 9/23/26.
 //
 
