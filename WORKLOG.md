@@ -25,3 +25,9 @@
 **In flight:** GitHub repo rename (`ideocentric/fauxto` to `ideocentric/fauxtoe`), `origin` URL update, and moving the local checkout folder, pending go-ahead.
 **Open questions:** `fauxtoe.xcodeproj/xcuserdata/.../xcschememanagement.plist` has been tracked since the initial commit despite `.gitignore`; untracking it is undecided.
 **Next step:** As in the previous entry, with `fauxto/` read as `fauxtoe/`: add the app icon to `fauxtoe/Assets.xcassets/AppIcon.appiconset/`.
+
+## 2026-09-24 14:05: Rename completed on GitHub and locally
+**Completed:** GitHub repo is `ideocentric/fauxtoe`; `origin` is `git@github.com:ideocentric/fauxtoe.git` and serves `main` at `65872ad`; checkout moved to `personal/fauxtoe`. Removed a stray untracked `fauxto.xcodeproj/` that Xcode rewrote on close (byte-identical to the pre-rename project at `92b2fe7`). Unit tests pass under the new scheme.
+**In flight:** none.
+**Open questions:** Untracking `xcschememanagement.plist` is still undecided. Old DerivedData folder `fauxto-*` can be deleted.
+**Next step:** Add the app icon to `fauxtoe/Assets.xcassets/AppIcon.appiconset/`, as in the 13:37 entry.
