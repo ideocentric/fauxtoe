@@ -37,3 +37,9 @@
 **In flight:** Notarization. No notarytool keychain profile exists yet.
 **Open questions:** Day-to-day builds stay on the free Personal Team (DBC6XYVD2X), because team 3722A5T4AG has no valid Apple Development certificate; moving the project to one team would need a new certificate. Untracking `xcschememanagement.plist` is still undecided.
 **Next step:** Create a notarytool profile, run `NOTARY_PROFILE=<profile> scripts/release.sh`, then push and decide on making the repo public.
+
+## 2026-09-24 19:30: Notarized release 1.0
+**Completed:** notarytool keychain profile `fauxtoe` created by the user. `NOTARY_PROFILE=fauxtoe scripts/release.sh` produced `build/release/fauxtoe-1.0.zip` (2.2 MB): submission `11116cc0-b9b5-491d-88b6-bb8c1ac948e0` Accepted with no issues, ticket stapled. A quarantined copy unzipped from the zip passes Gatekeeper as `source=Notarized Developer ID`.
+**In flight:** none. Commits since `65872ad` are not pushed.
+**Open questions:** Push, and making the repo public, await the user. Untracking `xcschememanagement.plist` is still undecided.
+**Next step:** Push `main`; decide whether to make the repo public and attach the zip to a GitHub release.
