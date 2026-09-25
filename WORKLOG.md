@@ -31,3 +31,9 @@
 **In flight:** none.
 **Open questions:** Untracking `xcschememanagement.plist` is still undecided. Old DerivedData folder `fauxto-*` can be deleted.
 **Next step:** Add the app icon to `fauxtoe/Assets.xcassets/AppIcon.appiconset/`, as in the 13:37 entry.
+
+## 2026-09-24 19:00: App icon and Developer ID release build
+**Completed:** Icon Composer icon added as `fauxtoe/AppIcon.icon` (empty `AppIcon.appiconset` removed); the build also generates flat renditions and an `.icns` for macOS 15. Bundle display name set to `fauxtoe`. `scripts/release.sh` archives and exports a universal (arm64, x86_64) app signed with Developer ID for team 3722A5T4AG, with hardened runtime and timestamp; output goes to `build/release/`. Artwork source in `outside-assets/` is excluded locally via `.git/info/exclude`.
+**In flight:** Notarization. No notarytool keychain profile exists yet.
+**Open questions:** Day-to-day builds stay on the free Personal Team (DBC6XYVD2X), because team 3722A5T4AG has no valid Apple Development certificate; moving the project to one team would need a new certificate. Untracking `xcschememanagement.plist` is still undecided.
+**Next step:** Create a notarytool profile, run `NOTARY_PROFILE=<profile> scripts/release.sh`, then push and decide on making the repo public.
