@@ -49,3 +49,9 @@
 **In flight:** none. Commits since `65872ad` are not pushed.
 **Open questions:** The Finder window layout of the image (icon positions, window size) is Finder's default and has not been looked at. Push and making the repo public await the user.
 **Next step:** Open the disk image in Finder to check the layout; push `main`.
+
+## 2026-09-24 20:10: Public, and release 1.0 published
+**Completed:** Tag `v1.0` (annotated, at `b1a2b02`) pushed. `ideocentric/fauxtoe` made public. GitHub release "fauxtoe 1.0" published at https://github.com/ideocentric/fauxtoe/releases/tag/v1.0 with `fauxtoe-1.0.dmg` only (zip not attached). The DMG downloaded anonymously from the release matches the local build (SHA-256 `a2e41f2c…986dc`) and passes Gatekeeper when quarantined. `gh` writes ran as ideocentric via `GH_TOKEN`; the active `gh` account (simplicit-mc) was left alone.
+**In flight:** none.
+**Open questions:** Untracking `xcschememanagement.plist` is still undecided. The README has no install or download section yet.
+**Next step:** None scheduled. For the next release, bump the version in the project, run `NOTARY_PROFILE=fauxtoe scripts/release.sh`, tag and publish the same way.
