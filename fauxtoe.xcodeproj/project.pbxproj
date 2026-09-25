@@ -406,6 +406,7 @@
 				ENABLE_RESOURCE_ACCESS_CAMERA = YES;
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = fauxtoe;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
 				INFOPLIST_KEY_NSCameraUsageDescription = "fauxtoe shows the camera so you can take photos.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Matt Comeione.\nFree software under the GNU AGPL v3 or later, with ABSOLUTELY NO WARRANTY. See the LICENSE file for details.";
@@ -443,6 +444,7 @@
 				ENABLE_RESOURCE_ACCESS_CAMERA = YES;
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = fauxtoe;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
 				INFOPLIST_KEY_NSCameraUsageDescription = "fauxtoe shows the camera so you can take photos.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Matt Comeione.\nFree software under the GNU AGPL v3 or later, with ABSOLUTELY NO WARRANTY. See the LICENSE file for details.";
