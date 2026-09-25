@@ -43,3 +43,9 @@
 **In flight:** none. Commits since `65872ad` are not pushed.
 **Open questions:** Push, and making the repo public, await the user. Untracking `xcschememanagement.plist` is still undecided.
 **Next step:** Push `main`; decide whether to make the repo public and attach the zip to a GitHub release.
+
+## 2026-09-24 19:55: Release disk image
+**Completed:** `scripts/release.sh` also builds `build/release/fauxtoe-<version>.dmg` (volume `fauxtoe`, the app beside an `Applications` link, no background art). The app is notarized and stapled before packaging; the disk image is then signed, notarized and stapled itself. Run for 1.0: app submission `564fee44-3a0e-4825-ade7-0b401bb321c6` and image `7a3cbf8d-ea8b-4836-a4b3-5dad9c2218c7` both Accepted. A quarantined copy of the image passes Gatekeeper, and the app copied out of it validates its stapled ticket and passes as `Notarized Developer ID`. (`stapler validate` fails with error 68 on the app while it sits on the read-only mounted image; the ticket file there is identical, so that is a tool quirk, not a missing ticket.)
+**In flight:** none. Commits since `65872ad` are not pushed.
+**Open questions:** The Finder window layout of the image (icon positions, window size) is Finder's default and has not been looked at. Push and making the repo public await the user.
+**Next step:** Open the disk image in Finder to check the layout; push `main`.
