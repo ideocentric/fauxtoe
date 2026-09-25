@@ -32,6 +32,14 @@ shooting for stop motion and time-lapse.
   its default app, drag one out to copy it, or right-click for Show in Finder
   and Move to Trash.
 
+## Download
+
+Get the latest disk image from the
+[Releases page](https://github.com/ideocentric/fauxtoe/releases/latest). Open
+it and drag fauxtoe to Applications. The app is signed with a Developer ID and
+notarized by Apple, so it opens without a security warning, and it runs
+natively on Apple silicon and Intel Macs.
+
 ## Requirements
 
 - macOS 15.7 or later
@@ -148,6 +156,7 @@ log show --last 10m --predicate 'subsystem == "com.ideocentric.fauxtoe"'
 | `fauxtoe/*.xcstrings` | String Catalogs holding all user-facing text |
 | `fauxtoeTests/` | Unit tests for naming, rendering, encoding and localization |
 | `scripts/sync-strings.sh` | Adds new interface strings to the String Catalog from the command line |
+| `scripts/release.sh` | Builds the signed and notarized release zip and disk image |
 
 ## Translating
 
