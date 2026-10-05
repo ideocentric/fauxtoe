@@ -57,7 +57,9 @@ struct ContentView: View {
                 rotation: preferences.rotation,
                 mirrored: preferences.mirrored,
                 configurationID: model.configurationID,
-                onClick: model.controls.supportsPointOfInterest ? { model.focus(at: $0) } : nil)
+                onClick: model.controls.supportsPointOfInterest ? { model.focus(at: $0) } : nil,
+                skins: preferences.onionSkinEnabled ? Array(model.onionSkins.prefix(preferences.onionSkinLayers)) : [],
+                skinOpacity: preferences.onionSkinOpacity)
                 .opacity(model.cameraState == .ready ? 1 : 0)
 
             CameraStatusView(model: model)

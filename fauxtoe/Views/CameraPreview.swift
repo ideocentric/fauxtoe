@@ -19,6 +19,10 @@ struct CameraPreview: NSViewRepresentable {
     var configurationID: Int
     /// Called with a point in device coordinates when the preview is clicked. Nil disables clicking.
     var onClick: ((CGPoint) -> Void)?
+    /// Onion skin frames to draw over the preview, newest first. Empty when onion skinning is off.
+    var skins: [CGImage] = []
+    /// Opacity of the newest skin; older ones fade from there.
+    var skinOpacity: Double = 0
 
     func makeNSView(context: Context) -> PreviewView {
         PreviewView(session: session)
@@ -28,6 +32,7 @@ struct CameraPreview: NSViewRepresentable {
         view.rotation = rotation
         view.mirrored = mirrored
         view.onClick = onClick
+        view.setSkins(skins, opacity: skinOpacity)
         view.refreshConnection()
         view.logVideoRect()
     }
@@ -40,6 +45,9 @@ final class PreviewView: NSView {
     }
     var rotation: Rotation = .none { didSet { if rotation != oldValue { needsLayout = true } } }
     var mirrored = false { didSet { if mirrored != oldValue { needsLayout = true } } }
+    /// Above the preview layer and not children of it: the frames are already rotated and mirrored,
+    /// so they must not pick up the preview's transform.
+    private var skinLayers: [CALayer] = []
 
     init(session: AVCaptureSession) {
         previewLayer = AVCaptureVideoPreviewLayer(session: session)
@@ -76,9 +84,44 @@ final class PreviewView: NSView {
         var transform = CGAffineTransform(rotationAngle: -CGFloat(rotation.rawValue) * .pi / 180)
         if mirrored { transform = transform.concatenating(CGAffineTransform(scaleX: -1, y: 1)) }
         previewLayer.setAffineTransform(transform)
+        layoutSkins()
         CATransaction.commit()
         refreshConnection()
         logVideoRect()
+    }
+
+    /// Shows `skins` (newest first) over the preview, the newest at `opacity` and older ones fainter.
+    func setSkins(_ skins: [CGImage], opacity: Double) {
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        while skinLayers.count < skins.count {
+            let skin = CALayer()
+            skin.contentsGravity = .resize
+            // Oldest lowest, so the newest frame is drawn last; all stay under the focus indicator.
+            layer?.insertSublayer(skin, above: previewLayer)
+            skinLayers.append(skin)
+        }
+        for (index, skin) in skinLayers.enumerated() {
+            let image = index < skins.count ? skins[index] : nil
+            if skin.contents as! CGImage? !== image { skin.contents = image }
+            skin.isHidden = image == nil
+            skin.opacity = Float(OnionSkin.opacity(ofLayer: index, count: skins.count, newest: opacity))
+        }
+        layoutSkins()
+        CATransaction.commit()
+        setAccessibilityLabel(skins.isEmpty
+            ? "Camera preview"
+            : String(localized: "Camera preview with onion skin", comment: "Accessibility label for the preview while previous frames are shown over it"))
+    }
+
+    /// Each skin is fitted to the bounds by its own aspect ratio, the same fit `.resizeAspect` gives the
+    /// live video, so a frame of the same shape lands exactly on the preview. Computed from the bounds
+    /// rather than read back from the preview layer, which lags a layout pass behind during a resize.
+    private func layoutSkins() {
+        for skin in skinLayers {
+            guard let image = skin.contents as! CGImage?, image.width > 0, image.height > 0 else { continue }
+            skin.frame = AVMakeRect(aspectRatio: CGSize(width: image.width, height: image.height), insideRect: bounds)
+        }
     }
 
     private var loggedVideoRect: CGRect?
