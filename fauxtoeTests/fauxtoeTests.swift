@@ -140,6 +140,76 @@ struct PreferencesTests {
     }
 }
 
+struct OnionSkinTests {
+    private let size = CGSize(width: 1920, height: 1080)
+    private func url(_ n: Int) -> URL { URL(fileURLWithPath: "/photos/walk-\(n).jpg") }
+
+    @Test func framesOfTheSameSizeLoadNewestFirst() {
+        let files = (1...6).reversed().map { (url: url($0), size: Optional(size)) }
+        #expect(OnionSkin.framesToLoad(files, frameSize: size) == [url(6), url(5), url(4), url(3)])
+    }
+
+    @Test func aDifferentSizeStartsANewSequence() {
+        let files: [(url: URL, size: CGSize?)] = [(url(3), CGSize(width: 1280, height: 720)), (url(2), size)]
+        #expect(OnionSkin.framesToLoad(files, frameSize: size).isEmpty)
+    }
+
+    @Test func loadingStopsAtASequenceBreak() {
+        let files: [(url: URL, size: CGSize?)] = [(url(5), size), (url(4), size), (url(3), nil), (url(2), size)]
+        #expect(OnionSkin.framesToLoad(files, frameSize: size) == [url(5), url(4)])
+    }
+
+    @Test func emptyFolderLoadsNothing() {
+        #expect(OnionSkin.framesToLoad([], frameSize: size).isEmpty)
+    }
+
+    @Test func olderLayersFade() {
+        #expect(OnionSkin.opacity(ofLayer: 0, count: 1, newest: 0.4) == 0.4)
+        let three = (0..<3).map { OnionSkin.opacity(ofLayer: $0, count: 3, newest: 0.6) }
+        #expect(zip(three, [0.6, 0.4, 0.2]).allSatisfy { abs($0 - $1) < 1e-9 })
+        #expect(OnionSkin.opacity(ofLayer: 3, count: 3, newest: 0.6) == 0)
+    }
+
+    @Test func frameSizeFollowsRotation() {
+        let format = CameraFormat(id: 0, photoWidth: 1920, photoHeight: 1080, videoWidth: 1920,
+                                  videoHeight: 1080, maxFrameRate: 30)
+        #expect(OnionSkin.frameSize(of: format, rotation: .none) == size)
+        #expect(OnionSkin.frameSize(of: format, rotation: .clockwise90) == CGSize(width: 1080, height: 1920))
+    }
+
+    @Test func pixelSizeIsReadFromTheFile() throws {
+        let context = CGContext(data: nil, width: 6, height: 4, bitsPerComponent: 8, bytesPerRow: 0,
+                                space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+        let data = try PhotoRenderer.encode(context.makeImage()!, metadata: [:], as: .jpeg, quality: 0.9)
+        let file = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).jpg")
+        try data.write(to: file)
+        defer { try? FileManager.default.removeItem(at: file) }
+        #expect(OnionSkin.pixelSize(of: file) == CGSize(width: 6, height: 4))
+    }
+
+    @MainActor @Test func sequenceNumberingResumesFromTheFolder() throws {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        for name in ["walk-011.jpg", "walk-012.heic", "image-050.jpg"] {
+            try Data().write(to: folder.appendingPathComponent(name))
+        }
+        let suite = "fauxtoeTests.\(UUID().uuidString)"
+        let preferences = Preferences(defaults: UserDefaults(suiteName: suite)!)
+        defer { UserDefaults().removePersistentDomain(forName: suite) }
+        preferences.namingScheme = .template
+        preferences.onionSkinRoot = "walk"
+        let model = AppModel(preferences: preferences, saveLocation: SaveLocation(folder: folder))
+
+        preferences.onionSkinEnabled = true
+        #expect(model.nextDefaultName(reserve: true) == "walk-013")
+        #expect(model.nextDefaultName() == "walk-014")
+        preferences.onionSkinEnabled = false
+        #expect(model.nextDefaultName().hasPrefix("fauxtoe "))
+    }
+}
+
 struct PhotoRendererTests {
     /// A 4×2 image whose top-left pixel is red and everything else black.
     private func sample() -> CGImage {

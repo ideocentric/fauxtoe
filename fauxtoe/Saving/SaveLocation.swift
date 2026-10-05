@@ -34,6 +34,12 @@ final class SaveLocation {
         restoreBookmark()
     }
 
+    /// A fixed folder that isn't remembered, for tests.
+    init(folder: URL) {
+        folderURL = folder
+        isDefault = false
+    }
+
     var displayPath: String {
         (folderURL.path as NSString).abbreviatingWithTildeInPath
     }

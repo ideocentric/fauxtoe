@@ -60,6 +60,10 @@ final class AppModel {
     private(set) var secondsUntilNextShot: Int?
     private(set) var flashCount = 0
     private(set) var recentPhotos: [SavedPhoto] = []
+    /// The last saved frames of the onion skin sequence, newest first, at preview resolution.
+    private(set) var onionSkins: [CGImage] = []
+    /// Says why onion skinning started a new sequence instead of showing the previous frames.
+    private(set) var onionSkinNotice: String?
     var pendingPhoto: PendingPhoto?
     var errorMessage: String?
 
@@ -85,6 +89,10 @@ final class AppModel {
     var activeFormat: CameraFormat? { formats.first { $0.id == activeFormatID } }
 
     var isShootingInterval: Bool { intervalShotCount != nil }
+
+    /// Camera, resolution, rotation and mirroring can't change while onion skinning, because the
+    /// previous frames would no longer line up with the preview.
+    var isConfigurationLocked: Bool { preferences.onionSkinEnabled }
 
     var canCapture: Bool {
         cameraState == .ready && !isReconfiguring && !isCapturing && !isShootingInterval && pendingPhoto == nil
@@ -134,12 +142,12 @@ final class AppModel {
     }
 
     func chooseDevice(_ id: String) {
-        guard id != selectedDeviceID else { return }
+        guard id != selectedDeviceID, !isConfigurationLocked else { return }
         Task { await selectDevice(id) }
     }
 
     func chooseFormat(_ formatID: Int) {
-        guard formatID != activeFormatID, !isReconfiguring else { return }
+        guard formatID != activeFormatID, !isReconfiguring, !isConfigurationLocked else { return }
         Task {
             isReconfiguring = true
             defer { isReconfiguring = false }
@@ -165,6 +173,8 @@ final class AppModel {
             apply(snapshot)
             await engine.start()
             cameraState = .ready
+            // Still on from the last launch: pick the sequence up where it was left.
+            if preferences.onionSkinEnabled { await resumeOnionSkin() }
         } catch {
             cameraState = .failed(error.localizedDescription)
         }
@@ -196,6 +206,11 @@ final class AppModel {
                 refreshDevices()
                 if let selectedDeviceID, !devices.contains(where: { $0.id == selectedDeviceID }) {
                     self.selectedDeviceID = nil
+                    // Falling back to another camera would break the lock, so end onion skinning first.
+                    if preferences.onionSkinEnabled {
+                        setOnionSkin(false)
+                        errorMessage = String(localized: "The camera was disconnected, so onion skinning has been turned off. Turn it on again to continue the sequence; numbering carries on where it left off.")
+                    }
                     if let fallback = CaptureEngine.preferredDeviceID() ?? devices.first?.id {
                         await selectDevice(fallback)
                     } else {
@@ -257,7 +272,8 @@ final class AppModel {
             if preferences.intervalSeconds > 0 {
                 await runInterval(every: preferences.intervalSeconds)
             } else {
-                await captureOne(askForName: preferences.askForName)
+                // A name prompt would break the onion skin sequence, so its photos save straight away.
+                await captureOne(askForName: preferences.askForName && !preferences.onionSkinEnabled)
             }
             captureTask = nil
         }
@@ -351,7 +367,7 @@ final class AppModel {
         var baseName = FileNaming.sanitize(name)
         if baseName.isEmpty { baseName = pending.defaultName }
         if baseName != pending.defaultName { releaseNumber(of: pending) }
-        if preferences.namingScheme == .template {
+        if preferences.namingScheme == .template && !preferences.onionSkinEnabled {
             if baseName == pending.defaultName {
                 lastCustomName = nil
                 _ = preferences.takeSequenceNumber()
@@ -367,14 +383,22 @@ final class AppModel {
             let url = FileNaming.uniqueURL(in: folder, baseName: baseName, fileExtension: format.fileExtension)
             let image = pending.image
             let metadata = pending.metadata
-            let thumbnail = try await Task.detached {
+            let skinSize = preferences.onionSkinEnabled ? onionSkinPixelSize : nil
+            let (thumbnail, skin) = try await Task.detached { () throws -> (CGImage?, CGImage?) in
                 let data = try PhotoRenderer.encode(image, metadata: metadata, as: format, quality: quality)
                 try data.write(to: url, options: .atomic)
-                return Self.thumbnail(from: data)
+                guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return (nil, nil) }
+                return (OnionSkin.image(from: source, maxPixelSize: Self.thumbnailPixelSize),
+                        skinSize.flatMap { OnionSkin.image(from: source, maxPixelSize: $0) })
             }.value
             // Oldest first, so the newest photo sits at the right end of the strip.
             recentPhotos.append(SavedPhoto(url: url, thumbnail: thumbnail))
             if recentPhotos.count > Self.maxRecentPhotos { recentPhotos.removeFirst() }
+            if let skin, preferences.onionSkinEnabled {
+                onionSkins.insert(skin, at: 0)
+                if onionSkins.count > OnionSkin.maxFrames { onionSkins.removeLast() }
+                onionSkinNotice = nil
+            }
             return true
         } catch {
             errorMessage = String(localized: "The photo couldn't be saved to \(saveLocation.displayPath). \(error.localizedDescription)", comment: "Arguments: the folder path, then the system's explanation")
@@ -385,6 +409,9 @@ final class AppModel {
     /// The name a photo gets when the user doesn't type one. With `reserve`, a numbered name's
     /// number is taken so the next call returns the one after it.
     func nextDefaultName(date: Date = .now, camera: String? = nil, reserve: Bool = false) -> String {
+        if preferences.onionSkinEnabled {
+            return nextNumberedName(root: preferences.effectiveOnionSkinRoot, reserve: reserve)
+        }
         switch preferences.namingScheme {
         case .template:
             return FileNaming.render(
@@ -393,13 +420,18 @@ final class AppModel {
                 sequence: preferences.peekSequenceNumber,
                 camera: camera ?? selectedDevice?.name ?? String(localized: "Camera", comment: "Fallback camera name"))
         case .numbered:
-            let root = preferences.effectiveNameRoot
-            let existing = (try? FileManager.default.contentsOfDirectory(atPath: saveLocation.folderURL.path)) ?? []
-            let key = root.lowercased()
-            let number = max(FileNaming.highestNumber(root: root, in: existing), issuedNumbers[key] ?? 0) + 1
-            if reserve { issuedNumbers[key] = number }
-            return FileNaming.numberedName(root: root, number: number)
+            return nextNumberedName(root: preferences.effectiveNameRoot, reserve: reserve)
         }
+    }
+
+    /// Numbering continues from what is already in the save folder, so it survives relaunches and
+    /// switching onion skinning off and on.
+    private func nextNumberedName(root: String, reserve: Bool) -> String {
+        let existing = (try? FileManager.default.contentsOfDirectory(atPath: saveLocation.folderURL.path)) ?? []
+        let key = root.lowercased()
+        let number = max(FileNaming.highestNumber(root: root, in: existing), issuedNumbers[key] ?? 0) + 1
+        if reserve { issuedNumbers[key] = number }
+        return FileNaming.numberedName(root: root, number: number)
     }
 
     func discardPending() {
@@ -410,21 +442,62 @@ final class AppModel {
     /// Gives back a numbered name's number when that photo isn't saved under it, so the series has
     /// no gap. Only the most recent number can be given back.
     private func releaseNumber(of pending: PendingPhoto) {
-        let root = preferences.effectiveNameRoot
+        let root = preferences.onionSkinEnabled ? preferences.effectiveOnionSkinRoot : preferences.effectiveNameRoot
         let key = root.lowercased()
         guard let issued = issuedNumbers[key],
               pending.defaultName == FileNaming.numberedName(root: root, number: issued) else { return }
         issuedNumbers[key] = issued - 1
     }
 
-    nonisolated private static func thumbnail(from data: Data) -> CGImage? {
-        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
-        let options: [CFString: Any] = [
-            kCGImageSourceCreateThumbnailFromImageAlways: true,
-            kCGImageSourceCreateThumbnailWithTransform: true,
-            kCGImageSourceThumbnailMaxPixelSize: 240,
-        ]
-        return CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
+    nonisolated private static let thumbnailPixelSize = 240
+
+    // MARK: - Onion skin
+
+    /// Turns onion skinning on or off. Not during an interval run, which would change naming midway.
+    func setOnionSkin(_ on: Bool) {
+        guard on != preferences.onionSkinEnabled, !isShootingInterval else { return }
+        preferences.onionSkinEnabled = on
+        onionSkins = []
+        onionSkinNotice = nil
+        if on { Task { await resumeOnionSkin() } }
+    }
+
+    /// Skins are kept at the preview's resolution: the preview can't show more detail than that.
+    private var onionSkinPixelSize: Int? {
+        activeFormat.map { max($0.videoWidth, $0.videoHeight) }
+    }
+
+    /// Loads the sequence's last frames from the save folder as skins, if they are the size this
+    /// camera and resolution produce. If not, this is a new keyframe sequence: no skins, but the
+    /// numbering still continues.
+    private func resumeOnionSkin() async {
+        guard preferences.onionSkinEnabled, let format = activeFormat, let skinSize = onionSkinPixelSize else { return }
+        let folder = saveLocation.folderURL
+        let root = preferences.effectiveOnionSkinRoot
+        let frameSize = OnionSkin.frameSize(of: format, rotation: preferences.rotation)
+        let (loaded, foundAny) = await Task.detached {
+            let names = (try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []
+            let files = FileNaming.numberedFiles(root: root, in: names)
+                .prefix(OnionSkin.maxFrames)
+                .map { file -> (url: URL, size: CGSize?) in
+                    let url = folder.appendingPathComponent(file.name)
+                    return (url, OnionSkin.pixelSize(of: url))
+                }
+            let skins = OnionSkin.framesToLoad(Array(files), frameSize: frameSize).compactMap { url in
+                CGImageSourceCreateWithURL(url as CFURL, nil).flatMap { OnionSkin.image(from: $0, maxPixelSize: skinSize) }
+            }
+            return (skins, !files.isEmpty)
+        }.value
+
+        // Turned off, or a frame was saved while loading: the newer state wins.
+        guard preferences.onionSkinEnabled, onionSkins.isEmpty, root == preferences.effectiveOnionSkinRoot else { return }
+        onionSkins = loaded
+        if foundAny && loaded.isEmpty {
+            let next = nextDefaultName()
+            onionSkinNotice = String(
+                localized: "The last frames are a different size from this camera's, so a new sequence starts with \(next).",
+                comment: "Shown when onion skinning resumes with another camera or resolution. The argument is the next file name")
+        }
     }
 
     // MARK: - Recent photos

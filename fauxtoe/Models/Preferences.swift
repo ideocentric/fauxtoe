@@ -59,8 +59,8 @@ final class Preferences {
     var onionSkinRoot: String { didSet { defaults.set(onionSkinRoot, forKey: Key.onionSkinRoot) } }
 
     static let intervalChoices = [0, 1, 2, 3, 5, 10, 15, 30, 60]
-    static let onionSkinOpacityRange = 0.1...0.9
-    static let onionSkinLayerRange = 1...4
+    nonisolated static let onionSkinOpacityRange = 0.1...0.9
+    nonisolated static let onionSkinLayerRange = 1...4
 
     static func intervalTitle(_ seconds: Int) -> String {
         switch seconds {
