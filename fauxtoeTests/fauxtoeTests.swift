@@ -85,6 +85,13 @@ struct FileNamingTests {
         #expect(FileNaming.highestNumber(root: "imagename", in: []) == 0)
     }
 
+    @Test func numberedFilesAreNewestFirst() {
+        let files = ["walk-002.jpg", "walk-010.heic", "walk-001.jpg", "walk-002 2.jpg", "run-011.jpg", "walk-010.jpg"]
+        let found = FileNaming.numberedFiles(root: "walk", in: files)
+        #expect(found.map(\.name) == ["walk-010.heic", "walk-010.jpg", "walk-002.jpg", "walk-001.jpg"])
+        #expect(found.map(\.number) == [10, 10, 2, 1])
+    }
+
     @Test func uniqueURLNeverReusesAnExistingName() {
         let folder = URL(fileURLWithPath: "/photos", isDirectory: true)
         let taken: Set<String> = ["/photos/shot.jpg", "/photos/shot 2.jpg"]

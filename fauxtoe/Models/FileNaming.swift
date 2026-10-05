@@ -99,14 +99,20 @@ nonisolated enum FileNaming {
     /// The highest N among files named `root-N.<ext>`, compared case-insensitively, or 0 if none.
     /// Numbering continues from what is already in the folder, so it survives relaunches.
     static func highestNumber(root: String, in fileNames: [String]) -> Int {
+        numberedFiles(root: root, in: fileNames).first?.number ?? 0
+    }
+
+    /// The files named `root-N.<ext>`, compared case-insensitively, highest N first. Files sharing a
+    /// number (the same frame saved in two formats) are ordered by name, so the result is stable.
+    static func numberedFiles(root: String, in fileNames: [String]) -> [(name: String, number: Int)] {
         let prefix = root.lowercased() + "-"
-        return fileNames.compactMap { fileName -> Int? in
+        return fileNames.compactMap { fileName -> (name: String, number: Int)? in
             let stem = (fileName as NSString).deletingPathExtension.lowercased()
             guard stem != fileName.lowercased(), stem.hasPrefix(prefix) else { return nil }
             let digits = stem.dropFirst(prefix.count)
-            guard !digits.isEmpty, digits.allSatisfy({ $0.isASCII && $0.isNumber }) else { return nil }
-            return Int(digits)
-        }.max() ?? 0
+            guard !digits.isEmpty, digits.allSatisfy({ $0.isASCII && $0.isNumber }), let number = Int(digits) else { return nil }
+            return (fileName, number)
+        }.sorted { ($0.number, $1.name) > ($1.number, $0.name) }
     }
 
     /// Suggests the next name in a series: "pcb-top-01" becomes "pcb-top-02", "board 9" becomes
