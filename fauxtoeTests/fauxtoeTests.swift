@@ -100,6 +100,46 @@ struct FileNamingTests {
     }
 }
 
+struct PreferencesTests {
+    private func freshDefaults() -> UserDefaults {
+        let name = "fauxtoeTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: name)!
+        defaults.removePersistentDomain(forName: name)
+        return defaults
+    }
+
+    @Test func onionSkinDefaults() {
+        let preferences = Preferences(defaults: freshDefaults())
+        #expect(!preferences.onionSkinEnabled)
+        #expect(preferences.onionSkinOpacity == 0.4)
+        #expect(preferences.onionSkinLayers == 1)
+        #expect(preferences.effectiveOnionSkinRoot == "frame")
+    }
+
+    @Test func onionSkinSettingsPersist() {
+        let defaults = freshDefaults()
+        let preferences = Preferences(defaults: defaults)
+        preferences.onionSkinEnabled = true
+        preferences.onionSkinOpacity = 0.6
+        preferences.onionSkinLayers = 3
+        preferences.onionSkinRoot = " walk/cycle "
+        let reloaded = Preferences(defaults: defaults)
+        #expect(reloaded.onionSkinEnabled)
+        #expect(reloaded.onionSkinOpacity == 0.6)
+        #expect(reloaded.onionSkinLayers == 3)
+        #expect(reloaded.effectiveOnionSkinRoot == "walk-cycle")
+    }
+
+    @Test func onionSkinValuesOutOfRangeAreClamped() {
+        let defaults = freshDefaults()
+        defaults.set(9, forKey: "onionSkinLayers")
+        defaults.set(2.0, forKey: "onionSkinOpacity")
+        let preferences = Preferences(defaults: defaults)
+        #expect(preferences.onionSkinLayers == 4)
+        #expect(preferences.onionSkinOpacity == 0.9)
+    }
+}
+
 struct PhotoRendererTests {
     /// A 4×2 image whose top-left pixel is red and everything else black.
     private func sample() -> CGImage {

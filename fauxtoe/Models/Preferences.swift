@@ -27,6 +27,10 @@ final class Preferences {
         static let showControls = "showControls"
         static let lastCameraID = "lastCameraID"
         static let formatByCamera = "formatByCamera"
+        static let onionSkinEnabled = "onionSkinEnabled"
+        static let onionSkinOpacity = "onionSkinOpacity"
+        static let onionSkinLayers = "onionSkinLayers"
+        static let onionSkinRoot = "onionSkinRoot"
     }
 
     @ObservationIgnored private let defaults: UserDefaults
@@ -45,8 +49,18 @@ final class Preferences {
     var mirrored: Bool { didSet { defaults.set(mirrored, forKey: Key.mirrored) } }
     var rotation: Rotation { didSet { defaults.set(rotation.rawValue, forKey: Key.rotation) } }
     var showControls: Bool { didSet { defaults.set(showControls, forKey: Key.showControls) } }
+    /// Shows the last saved frames over the preview, and names photos as a numbered sequence.
+    var onionSkinEnabled: Bool { didSet { defaults.set(onionSkinEnabled, forKey: Key.onionSkinEnabled) } }
+    /// Opacity of the newest onion skin frame; older frames fade from there.
+    var onionSkinOpacity: Double { didSet { defaults.set(onionSkinOpacity, forKey: Key.onionSkinOpacity) } }
+    /// How many previous frames to show.
+    var onionSkinLayers: Int { didSet { defaults.set(onionSkinLayers, forKey: Key.onionSkinLayers) } }
+    /// The root for onion skin sequence names, as typed. Use `effectiveOnionSkinRoot` when building a file name.
+    var onionSkinRoot: String { didSet { defaults.set(onionSkinRoot, forKey: Key.onionSkinRoot) } }
 
     static let intervalChoices = [0, 1, 2, 3, 5, 10, 15, 30, 60]
+    static let onionSkinOpacityRange = 0.1...0.9
+    static let onionSkinLayerRange = 1...4
 
     static func intervalTitle(_ seconds: Int) -> String {
         switch seconds {
@@ -59,7 +73,8 @@ final class Preferences {
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         // Stored rather than registered, so they stay fixed in the language of first launch.
-        for (key, value) in [(Key.nameTemplate, FileNaming.defaultTemplate), (Key.nameRoot, FileNaming.defaultRoot)]
+        for (key, value) in [(Key.nameTemplate, FileNaming.defaultTemplate), (Key.nameRoot, FileNaming.defaultRoot),
+                           (Key.onionSkinRoot, FileNaming.defaultOnionSkinRoot)]
         where defaults.object(forKey: key) == nil {
             defaults.set(value, forKey: key)
         }
@@ -74,6 +89,9 @@ final class Preferences {
             Key.mirrored: false,
             Key.rotation: 0,
             Key.showControls: false,
+            Key.onionSkinEnabled: false,
+            Key.onionSkinOpacity: 0.4,
+            Key.onionSkinLayers: 1,
         ])
         fileFormat = ImageFileFormat(rawValue: defaults.string(forKey: Key.fileFormat) ?? "") ?? .jpeg
         quality = defaults.double(forKey: Key.quality)
@@ -86,11 +104,20 @@ final class Preferences {
         mirrored = defaults.bool(forKey: Key.mirrored)
         rotation = Rotation(rawValue: defaults.integer(forKey: Key.rotation)) ?? .none
         showControls = defaults.bool(forKey: Key.showControls)
+        onionSkinEnabled = defaults.bool(forKey: Key.onionSkinEnabled)
+        onionSkinOpacity = defaults.double(forKey: Key.onionSkinOpacity).clamped(to: Self.onionSkinOpacityRange)
+        onionSkinLayers = defaults.integer(forKey: Key.onionSkinLayers).clamped(to: Self.onionSkinLayerRange)
+        onionSkinRoot = defaults.string(forKey: Key.onionSkinRoot) ?? FileNaming.defaultOnionSkinRoot
     }
 
     var effectiveNameRoot: String {
         let root = FileNaming.sanitize(nameRoot)
         return root.isEmpty ? FileNaming.defaultRoot : root
+    }
+
+    var effectiveOnionSkinRoot: String {
+        let root = FileNaming.sanitize(onionSkinRoot)
+        return root.isEmpty ? FileNaming.defaultOnionSkinRoot : root
     }
 
     /// Returns the next `{n}` value and advances the counter.
@@ -118,4 +145,8 @@ final class Preferences {
         map[id] = key
         defaults.set(map, forKey: Key.formatByCamera)
     }
+}
+
+nonisolated extension Comparable {
+    func clamped(to range: ClosedRange<Self>) -> Self { min(max(self, range.lowerBound), range.upperBound) }
 }

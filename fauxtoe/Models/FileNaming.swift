@@ -91,6 +91,11 @@ nonisolated enum FileNaming {
         localized: "image",
         comment: "Default name root for numbered file names (image-001). Lowercase, one word, no spaces.")
 
+    /// Translated for new users; stored on first launch, like `defaultTemplate`.
+    static let defaultOnionSkinRoot = String(
+        localized: "frame",
+        comment: "Default name root for onion skin sequences (frame-001). Lowercase, one word, no spaces.")
+
     /// `root-001`. Numbers keep growing past 999 (`root-1000`).
     static func numberedName(root: String, number: Int) -> String {
         "\(root)-\(String(format: "%03d", number))"
