@@ -21,7 +21,7 @@ struct CameraPreview: NSViewRepresentable {
     var onClick: ((CGPoint) -> Void)?
     /// Onion skin frames to draw over the preview, newest first. Empty when onion skinning is off.
     var skins: [CGImage] = []
-    /// Opacity of the newest skin; older ones fade from there.
+    /// Opacity of the newest skin; each older one has half the opacity of the one before.
     var skinOpacity: Double = 0
 
     func makeNSView(context: Context) -> PreviewView {
@@ -97,15 +97,16 @@ final class PreviewView: NSView {
         while skinLayers.count < skins.count {
             let skin = CALayer()
             skin.contentsGravity = .resize
-            // Oldest lowest, so the newest frame is drawn last; all stay under the focus indicator.
-            layer?.insertSublayer(skin, above: previewLayer)
+            // Newest just above the video and each older frame above that, so the faintest frame is
+            // on top; all stay under the focus indicator.
+            layer?.insertSublayer(skin, above: skinLayers.last ?? previewLayer)
             skinLayers.append(skin)
         }
         for (index, skin) in skinLayers.enumerated() {
             let image = index < skins.count ? skins[index] : nil
             if skin.contents as! CGImage? !== image { skin.contents = image }
             skin.isHidden = image == nil
-            skin.opacity = Float(OnionSkin.opacity(ofLayer: index, count: skins.count, newest: opacity))
+            skin.opacity = Float(OnionSkin.opacity(ofLayer: index, newest: opacity))
         }
         layoutSkins()
         CATransaction.commit()

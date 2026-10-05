@@ -196,11 +196,11 @@ struct OnionSkinTests {
         #expect(OnionSkin.canResume(other, root: "walk", geometry: changed))
     }
 
-    @Test func olderLayersFade() {
-        #expect(OnionSkin.opacity(ofLayer: 0, count: 1, newest: 0.4) == 0.4)
-        let three = (0..<3).map { OnionSkin.opacity(ofLayer: $0, count: 3, newest: 0.6) }
-        #expect(zip(three, [0.6, 0.4, 0.2]).allSatisfy { abs($0 - $1) < 1e-9 })
-        #expect(OnionSkin.opacity(ofLayer: 3, count: 3, newest: 0.6) == 0)
+    @Test func eachOlderLayerHasHalfTheOpacity() {
+        let atHalf = (0..<4).map { OnionSkin.opacity(ofLayer: $0, newest: 0.5) }
+        #expect(atHalf == [0.5, 0.25, 0.125, 0.0625])
+        let atForty = (0..<4).map { OnionSkin.opacity(ofLayer: $0, newest: 0.4) }
+        #expect(zip(atForty, [0.4, 0.2, 0.1, 0.05]).allSatisfy { abs($0 - $1) < 1e-9 })
     }
 
     @Test func frameSizeFollowsRotation() {

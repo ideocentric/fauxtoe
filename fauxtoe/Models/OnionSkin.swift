@@ -58,11 +58,13 @@ nonisolated enum OnionSkin {
             .map(\.url)
     }
 
-    /// Opacity of layer `index` (0 is the newest frame) when `count` layers are shown. The newest frame
-    /// gets the full setting and each older one fades a step further.
-    static func opacity(ofLayer index: Int, count: Int, newest: Double) -> Double {
-        guard count > 0, (0..<count).contains(index) else { return 0 }
-        return newest * Double(count - index) / Double(count)
+    /// Opacity of layer `index` (0 is the newest frame). The newest frame gets the full setting and each
+    /// older one half the one before: 50, 25, 12.5, 6.25% at the 50% setting. Layers are stacked oldest
+    /// on top, which gives each older frame a visibly smaller share of the picture (about 31, 20, 12
+    /// and 6% at that setting, with the live view at 31%).
+    static func opacity(ofLayer index: Int, newest: Double) -> Double {
+        guard index >= 0 else { return 0 }
+        return newest * pow(0.5, Double(index))
     }
 
     /// The pixel size of an image file, read from its header without decoding it.
