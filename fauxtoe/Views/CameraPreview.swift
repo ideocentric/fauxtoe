@@ -84,17 +84,22 @@ final class PreviewView: NSView {
     private var loggedVideoRect: CGRect?
 
     /// Where the video is actually drawn, in this view's layer coordinates: `.resizeAspect`
-    /// letterboxes it inside the bounds, and the layer may be rotated.
-    var videoRect: CGRect {
-        guard let root = layer else { return .zero }
-        let rect = previewLayer.layerRectConverted(fromMetadataOutputRect: CGRect(x: 0, y: 0, width: 1, height: 1))
-        return previewLayer.convert(rect, to: root)
+    /// letterboxes it inside the bounds, and the layer may be rotated. Nil until there is video to
+    /// draw: before the session connects, the conversion returns `CGRect.null`, whose origin is
+    /// infinite.
+    var videoRect: CGRect? {
+        guard let root = layer else { return nil }
+        let rect = previewLayer.convert(
+            previewLayer.layerRectConverted(fromMetadataOutputRect: CGRect(x: 0, y: 0, width: 1, height: 1)),
+            to: root)
+        guard !rect.isNull, !rect.isInfinite, !rect.isEmpty,
+              [rect.minX, rect.minY, rect.width, rect.height].allSatisfy(\.isFinite) else { return nil }
+        return rect
     }
 
     /// Logged only when it changes, so a live resize doesn't flood the log.
     func logVideoRect() {
-        let rect = videoRect.integral
-        guard rect != loggedVideoRect else { return }
+        guard let rect = videoRect?.integral, rect != loggedVideoRect else { return }
         loggedVideoRect = rect
         Log.capture.info("Preview: bounds \(Int(self.bounds.width))×\(Int(self.bounds.height)), video drawn at \(Int(rect.minX)),\(Int(rect.minY)) \(Int(rect.width))×\(Int(rect.height))")
     }

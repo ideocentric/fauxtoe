@@ -1,6 +1,36 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    ".%@" : {
+      "comment" : "File extension shown after the name field",
+      "shouldTranslate" : false
+    },
+    "·" : {
+      "comment" : "Separator",
+      "shouldTranslate" : false
+    },
+    "“%@” is no longer in %@. It was moved or deleted outside fauxtoe, so it has been removed from recent photos." : {
+      "comment" : "Arguments: the file name, then its folder",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "“%1$@” is no longer in %2$@. It was moved or deleted outside fauxtoe, so it has been removed from recent photos."
+          }
+        }
+      }
+    },
+    "%@ · %@" : {
+      "comment" : "Photo size (width × height), then file format",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
     "%@ (%@ MP)" : {
       "comment" : "Resolution menu item. Arguments: width × height, then megapixels",
       "localizations" : {
@@ -14,17 +44,6 @@
     },
     "%@ is lossless, which suits detail shots of boards and components. Files are larger." : {
 
-    },
-    "%@ · %@" : {
-      "comment" : "Photo size (width × height), then file format",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ · %2$@"
-          }
-        }
-      }
     },
     "%lld photos" : {
       "comment" : "Interval shooting badge: photos taken so far",
@@ -48,10 +67,6 @@
           }
         }
       }
-    },
-    ".%@" : {
-      "comment" : "File extension shown after the name field",
-      "shouldTranslate" : false
     },
     "90° Clockwise" : {
 
@@ -89,16 +104,16 @@
     "Choose" : {
       "comment" : "Button that confirms the chosen save folder"
     },
-    "Choose Save Folder" : {
-
-    },
-    "Choose Save Folder…" : {
-
-    },
     "Choose a camera" : {
 
     },
     "Choose a resolution" : {
+
+    },
+    "Choose Save Folder" : {
+
+    },
+    "Choose Save Folder…" : {
 
     },
     "Choose…" : {
@@ -151,6 +166,13 @@
     "Exposure" : {
 
     },
+    "fauxtoe" : {
+      "comment" : "App name",
+      "shouldTranslate" : false
+    },
+    "fauxtoe {date} at {time}" : {
+      "comment" : "Default file name template. Keep the {date} and {time} tokens exactly as written; translate the rest."
+    },
     "File format" : {
 
     },
@@ -166,8 +188,14 @@
     "Format" : {
 
     },
+    "frame" : {
+      "comment" : "Default name root for onion skin sequences (frame-001). Lowercase, one word, no spaces."
+    },
     "Hide Camera Controls" : {
 
+    },
+    "image" : {
+      "comment" : "Default name root for numbered file names (image-001). Lowercase, one word, no spaces."
     },
     "Image" : {
 
@@ -209,10 +237,10 @@
     "Mirror" : {
 
     },
-    "Mirror Image" : {
+    "Mirror image" : {
 
     },
-    "Mirror image" : {
+    "Mirror Image" : {
 
     },
     "Move to Trash" : {
@@ -235,6 +263,9 @@
     },
     "Next file" : {
 
+    },
+    "next in %llds" : {
+      "comment" : "Interval shooting badge: seconds until the next photo"
     },
     "No Camera Connected" : {
 
@@ -316,9 +347,6 @@
     "Show Camera Controls" : {
 
     },
-    "Show Save Folder in Finder" : {
-
-    },
     "Show in Finder" : {
 
     },
@@ -329,6 +357,9 @@
 
     },
     "Show or hide camera controls" : {
+
+    },
+    "Show Save Folder in Finder" : {
 
     },
     "Single Photo" : {
@@ -368,22 +399,19 @@
     "Stop interval shooting (Space or ⌘.)" : {
 
     },
-    "Take Photo" : {
-
-    },
     "Take a photo (Space or ⌘T)" : {
 
     },
     "Take a single photo, or a photo every few seconds for stop motion and time-lapse" : {
 
     },
+    "Take Photo" : {
+
+    },
     "Template" : {
 
     },
     "Template tokens" : {
-
-    },
-    "The Camera Isn't Available" : {
 
     },
     "The camera can't take still photos." : {
@@ -398,8 +426,17 @@
     "The camera is no longer available." : {
 
     },
+    "The Camera Isn't Available" : {
+
+    },
     "The camera stopped unexpectedly." : {
 
+    },
+    "The camera was disconnected, so onion skinning has been turned off. Turn it on again to continue the sequence; numbering carries on where it left off." : {
+
+    },
+    "The last frames are a different size from this camera's, so a new sequence starts with %@." : {
+      "comment" : "Shown when onion skinning resumes with another camera or resolution. The argument is the next file name"
     },
     "The photo couldn't be encoded as %@." : {
       "comment" : "The argument is a file format, e.g. HEIC"
@@ -443,11 +480,11 @@
         }
       }
     },
-    "This Mac can't write %@ files." : {
-      "comment" : "The argument is a file format, e.g. HEIC"
-    },
     "This camera doesn't offer focus, exposure or white balance controls to macOS apps." : {
 
+    },
+    "This Mac can't write %@ files." : {
+      "comment" : "The argument is a file format, e.g. HEIC"
     },
     "Time, e.g. 14.05.32" : {
       "comment" : "Naming token description"
@@ -472,34 +509,6 @@
     },
     "With an interval set, the shutter takes a photo right away, then another at that interval until you stop it (Space or ⌘.). Use it for stop motion and time-lapse. Interval photos save without asking for a name; Name and number naming gives a tidy frame sequence." : {
 
-    },
-    "fauxtoe" : {
-      "comment" : "App name",
-      "shouldTranslate" : false
-    },
-    "fauxtoe {date} at {time}" : {
-      "comment" : "Default file name template. Keep the {date} and {time} tokens exactly as written; translate the rest."
-    },
-    "image" : {
-      "comment" : "Default name root for numbered file names (image-001). Lowercase, one word, no spaces."
-    },
-    "next in %llds" : {
-      "comment" : "Interval shooting badge: seconds until the next photo"
-    },
-    "·" : {
-      "comment" : "Separator",
-      "shouldTranslate" : false
-    },
-    "“%@” is no longer in %@. It was moved or deleted outside fauxtoe, so it has been removed from recent photos." : {
-      "comment" : "Arguments: the file name, then its folder",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "“%1$@” is no longer in %2$@. It was moved or deleted outside fauxtoe, so it has been removed from recent photos."
-          }
-        }
-      }
     }
   },
   "version" : "1.0"
