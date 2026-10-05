@@ -23,6 +23,10 @@ nonisolated final class CaptureEngine: @unchecked Sendable {
     private var photoOutput = AVCapturePhotoOutput()
     private let queue = DispatchQueue(label: "com.ideocentric.fauxtoe.capture")
     private var input: AVCaptureDeviceInput?
+    /// The camera is kept locked for configuration once a format is chosen. Unlocked, the session
+    /// replaces the chosen format with one of its own (1920×1080 on a FaceTime HD camera) when it
+    /// starts running, and on every configuration commit while it runs.
+    private var lockedDevice: AVCaptureDevice?
     private var inFlight: [Int64: PhotoCaptureDelegate] = [:]
 
     static let deviceTypes: [AVCaptureDevice.DeviceType] = [.builtInWideAngleCamera, .external, .deskViewCamera]
@@ -48,22 +52,27 @@ nonisolated final class CaptureEngine: @unchecked Sendable {
     var isRunning: Bool { session.isRunning }
 
     func start() async {
-        _ = try? await onQueue { [session] in
+        _ = try? await onQueue { [self] in
             if !session.isRunning {
                 Log.capture.notice("Starting session")
                 session.startRunning()
                 Log.capture.notice("Session started")
+                if let device = input?.device {
+                    let video = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
+                    Log.capture.info("Running: video \(video.width)×\(video.height)")
+                }
             }
         }
     }
 
     func stop() async {
-        _ = try? await onQueue { [session] in
+        _ = try? await onQueue { [self] in
             if session.isRunning {
                 Log.capture.notice("Stopping session")
                 session.stopRunning()
                 Log.capture.notice("Session stopped")
             }
+            releaseDeviceLock()
         }
     }
 
@@ -77,6 +86,7 @@ nonisolated final class CaptureEngine: @unchecked Sendable {
             session.beginConfiguration()
             defer { session.commitConfiguration() }
 
+            releaseDeviceLock()
             if let input { session.removeInput(input) }
             guard session.canAddInput(newInput) else {
                 if let input, session.canAddInput(input) { session.addInput(input) }
@@ -122,11 +132,29 @@ nonisolated final class CaptureEngine: @unchecked Sendable {
         }
     }
 
+    /// What the camera is using now. Read after the configuration is committed, since that is when the
+    /// session could have changed the format.
+    fileprivate func committedSnapshot() async -> CameraSnapshot? {
+        try? await onQueue { [self] in
+            guard let device = input?.device else { return nil }
+            return snapshot(for: device, formats: Self.formats(for: device))
+        }
+    }
+
+    /// Sets the format and leaves the device locked, so the session keeps it (see `lockedDevice`).
     private func applyFormat(_ formatID: Int, to device: AVCaptureDevice) throws {
         guard device.formats.indices.contains(formatID) else { return }
-        try device.lockForConfiguration()
+        if lockedDevice !== device {
+            releaseDeviceLock()
+            try device.lockForConfiguration()
+            lockedDevice = device
+        }
         device.activeFormat = device.formats[formatID]
-        device.unlockForConfiguration()
+    }
+
+    private func releaseDeviceLock() {
+        lockedDevice?.unlockForConfiguration()
+        lockedDevice = nil
     }
 
     // MARK: - Controls
@@ -173,9 +201,14 @@ nonisolated final class CaptureEngine: @unchecked Sendable {
     private func configureDevice(_ change: @escaping (AVCaptureDevice) -> Void) async throws -> CameraControls {
         try await onQueue { [self] in
             guard let device = input?.device else { throw CameraError.deviceUnavailable }
-            try device.lockForConfiguration()
-            change(device)
-            device.unlockForConfiguration()
+            // Already held for the format; unlocking here would let the session replace it.
+            if device === lockedDevice {
+                change(device)
+            } else {
+                try device.lockForConfiguration()
+                change(device)
+                device.unlockForConfiguration()
+            }
             return Self.controls(for: device)
         }
     }
@@ -266,9 +299,11 @@ nonisolated final class CaptureEngine: @unchecked Sendable {
 }
 
 private extension CameraSnapshot {
+    /// Reports the format the camera ended up with, not the one requested, so the UI can't claim a
+    /// resolution the camera isn't using.
     nonisolated func afterCommit(_ engine: CaptureEngine) async -> CameraSnapshot {
         await engine.configurePhotoDimensions()
-        return self
+        return await engine.committedSnapshot() ?? self
     }
 }
 
