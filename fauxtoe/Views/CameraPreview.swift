@@ -7,6 +7,7 @@
 //
 
 import AVFoundation
+import os
 import SwiftUI
 
 /// Live camera preview. Rotation and mirroring are applied to the layer here and to the pixels in
@@ -28,6 +29,7 @@ struct CameraPreview: NSViewRepresentable {
         view.mirrored = mirrored
         view.onClick = onClick
         view.refreshConnection()
+        view.logVideoRect()
     }
 }
 
@@ -76,6 +78,25 @@ final class PreviewView: NSView {
         previewLayer.setAffineTransform(transform)
         CATransaction.commit()
         refreshConnection()
+        logVideoRect()
+    }
+
+    private var loggedVideoRect: CGRect?
+
+    /// Where the video is actually drawn, in this view's layer coordinates: `.resizeAspect`
+    /// letterboxes it inside the bounds, and the layer may be rotated.
+    var videoRect: CGRect {
+        guard let root = layer else { return .zero }
+        let rect = previewLayer.layerRectConverted(fromMetadataOutputRect: CGRect(x: 0, y: 0, width: 1, height: 1))
+        return previewLayer.convert(rect, to: root)
+    }
+
+    /// Logged only when it changes, so a live resize doesn't flood the log.
+    func logVideoRect() {
+        let rect = videoRect.integral
+        guard rect != loggedVideoRect else { return }
+        loggedVideoRect = rect
+        Log.capture.info("Preview: bounds \(Int(self.bounds.width))×\(Int(self.bounds.height)), video drawn at \(Int(rect.minX)),\(Int(rect.minY)) \(Int(rect.width))×\(Int(rect.height))")
     }
 
     override func mouseDown(with event: NSEvent) {

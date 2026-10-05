@@ -10,6 +10,7 @@ import AppKit
 import AVFoundation
 import ImageIO
 import Observation
+import os
 
 /// A photo that has been taken but not yet named and saved.
 struct PendingPhoto: Identifiable {
@@ -313,6 +314,7 @@ final class AppModel {
             let image = await Task.detached {
                 PhotoRenderer.orient(raw.image, rotation: rotation, mirrored: mirrored)
             }.value
+            Log.capture.info("Captured \(raw.image.width)×\(raw.image.height), oriented \(image.width)×\(image.height)")
 
             let date = Date.now
             let camera = selectedDevice?.name ?? String(localized: "Camera", comment: "Fallback camera name")

@@ -116,6 +116,9 @@ nonisolated final class CaptureEngine: @unchecked Sendable {
             if let largest = device.activeFormat.supportedMaxPhotoDimensions.max(by: { $0.area < $1.area }) {
                 photoOutput.maxPhotoDimensions = largest
             }
+            let video = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
+            let photo = photoOutput.maxPhotoDimensions
+            Log.capture.info("Format: video \(video.width)×\(video.height), max photo \(photo.width)×\(photo.height)")
         }
     }
 
