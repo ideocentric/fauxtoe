@@ -28,6 +28,9 @@ shooting for stop motion and time-lapse.
   also save straight away under a default name.
 - **Interval shooting.** One photo now, then another every N seconds until you
   stop, for stop motion and time-lapse.
+- **Onion skin** for stop motion: the last one to four frames drawn faintly over
+  the live preview, each older one fainter, with photos saved as a numbered
+  sequence.
 - **Recent photos** along the bottom of the window. Double-click to open one in
   its default app, drag one out to copy it, or right-click for Show in Finder
   and Move to Trash.
@@ -71,6 +74,7 @@ Tools, prefix the command with
 | Stop interval shooting | Space or ⌘. |
 | Switch to camera 1 to 9 | ⌘1 to ⌘9 |
 | Rotate left / right | ⌘L / ⌘R |
+| Turn onion skin on or off | ⌥⌘O |
 | Show or hide camera controls | ⌥⌘I |
 | Show the save folder in Finder | ⇧⌘O |
 | Settings | ⌘, |
@@ -118,6 +122,28 @@ Interval photos save without asking for a name. Name and number naming (for
 example `scene-001`, `scene-002`) gives a frame sequence that stop-motion and
 video tools can import directly.
 
+### Onion skin
+
+Turn onion skin on from the toolbar, the Camera menu (⌥⌘O) or the Onion Skin
+section of the controls panel. It works with single photos and interval runs.
+
+The last frames you took are drawn over the live preview so you can judge each
+move. Choose how many to show (one to four) and the opacity of the newest one;
+each older frame has half the opacity of the one before, so at 50% they show at
+50, 25, 12.5 and 6.25%. Older frames are drawn on top of newer ones, which keeps
+each step back clearly fainter. The frames stay lined up with the preview when
+you resize the window.
+
+With onion skin on, photos save straight away, without the naming sheet, as a
+numbered sequence under the name in the Sequence field (`frame-001`,
+`frame-002`, and so on). Numbering continues from the highest number already in
+the folder, and the controls panel shows the next file name.
+
+Changing the camera, resolution, rotation or mirroring starts a new sequence:
+the earlier frames would no longer line up, so they are hidden, and numbering
+carries on. Turning onion skin off and on again, or relaunching, brings the last
+frames back only if they were taken with the same camera setup.
+
 ## Limitations
 
 - **Most USB webcams expose no adjustments to macOS apps.** AVFoundation on
@@ -128,6 +154,10 @@ video tools can import directly.
 - **The camera's own photo metadata is not available on macOS.** fauxtoe writes
   the capture time, camera name and software name into each file instead.
 - **Zoom and exposure compensation are not available** in AVFoundation on macOS.
+- **Camera adjustments are best effort.** fauxtoe passes focus, exposure and
+  white balance requests to the camera through macOS, and how a camera responds
+  is up to its driver. Some cameras may ignore a request, or keep adjusting on
+  their own.
 
 ## Privacy
 
@@ -149,12 +179,12 @@ log show --last 10m --predicate 'subsystem == "com.ideocentric.fauxtoe"'
 | --- | --- |
 | `fauxtoe/Camera/` | `CaptureEngine`, which owns the capture session, and the camera value types |
 | `fauxtoe/Saving/` | Rotation, mirroring and encoding (`PhotoRenderer`), and the save folder (`SaveLocation`) |
-| `fauxtoe/Models/` | Output formats, file naming and user preferences |
-| `fauxtoe/Views/` | Preview, capture bar, controls panel, naming sheet and Settings |
-| `fauxtoe/AppModel.swift` | App state: camera selection, capture, interval runs, saving and recent photos |
+| `fauxtoe/Models/` | Output formats, file naming, onion skin rules and user preferences |
+| `fauxtoe/Views/` | Preview (with onion skin layers), capture bar, controls panel, naming sheet and Settings |
+| `fauxtoe/AppModel.swift` | App state: camera selection, capture, interval runs, onion skin, saving and recent photos |
 | `fauxtoe/FauxtoeCommands.swift` | Menu bar commands |
 | `fauxtoe/*.xcstrings` | String Catalogs holding all user-facing text |
-| `fauxtoeTests/` | Unit tests for naming, rendering, encoding and localization |
+| `fauxtoeTests/` | Unit tests for naming, onion skin, preferences, rendering, encoding and localization |
 | `scripts/sync-strings.sh` | Adds new interface strings to the String Catalog from the command line |
 | `scripts/release.sh` | Builds the signed and notarized release zip and disk image |
 

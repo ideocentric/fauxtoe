@@ -61,3 +61,20 @@
 **In flight:** none.
 **Open questions:** none.
 **Next step:** For the next release: raise `MARKETING_VERSION` (and `CURRENT_PROJECT_VERSION`) in `fauxtoe.xcodeproj`, commit, run `NOTARY_PROFILE=fauxtoe scripts/release.sh`, then tag `v<version>`, push the tag over SSH, and run `gh release create` as ideocentric (`GH_TOKEN="$(gh auth token --user ideocentric)"`) with `build/release/fauxtoe-<version>.dmg`.
+
+## 2026-10-05 16:58: Onion skin, and the resolution menu fixed
+**Completed:**
+- Found a 1.0 bug: the Resolution menu never took effect. The capture session replaced the chosen format with its own (1920x1080 on the test camera) when it started running and on every configuration commit while running. Shown by size logging (`d7a34db`): `Format: 1920×1440` logged before the session started, then every capture was 1920×1080. Fixed by keeping the camera locked for configuration after a format is set (`7b1af5c`); the UI now reads the format back after the commit. On the user's camera, captures then followed the choice (1920×1440, 640×480). `.inputPriority`, the iOS answer, does not exist on macOS.
+- Crash fixed (`2e91591`): before the session connects, the preview layer's converted rect is `CGRect.null` (infinite origin), and converting it to `Int` for the log trapped.
+- Onion skin (branch `onion-skin`): one to four previous frames over the preview, opacity halving per frame and the oldest drawn on top; works for single shots and interval runs; photos save as a numbered sequence under their own root without the name prompt, numbering resuming from the folder. Changing camera, resolution, rotation or mirroring hides the frames and starts a new sequence; the setup is saved with the sequence so a relaunch only reloads frames from the same setup. Skins are fitted with `AVMakeRect` from the view bounds, because the preview layer's own rect lags a layout pass during a live resize.
+- 45 unit tests pass. Every commit on the branch builds on its own (checked in a scratch worktree, later commits built and tested in order). The user tried it on hardware and reported it working as desired.
+
+**In flight:** Branches `resolution-fix` (logging, crash fix, resolution fix) and `onion-skin` (on top of it) are local only; nothing is pushed.
+
+**Open questions:**
+- A first version locked camera, resolution, rotation and mirror while onion skin was on; the next commit replaced the locks with starting a new sequence. Decided: squash the pair (done, `6c899b2`, tree unchanged).
+- Decided: one full release with onion skin, its notes calling out the resolution fix. In 1.0 the chosen resolution can be replaced by the session's own; seen as 1920x1080 on the test camera, other cameras untested.
+- Decided: the size logging stays, for diagnosing future regressions.
+- Focus and exposure with the device lock held: checked on the test camera, which offers both; its continuous auto focus and exposure keep adjusting. Decided: camera adjustments are best effort, with no per-camera work; noted in the README's Limitations.
+
+**Next step:** Decide the squash and merge order, then merge to `main` over SSH as ideocentric and, if releasing, follow the release steps in the 2026-09-24 20:07 entry.
