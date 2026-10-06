@@ -2,9 +2,9 @@
 # Copyright (C) 2026 Matt Comeione
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
-# Builds a Developer ID signed release of fauxtoe into build/release/: a zip of
-# the app, the user manual as a PDF, and a disk image holding the app, a link to
-# /Applications and the manual. The manual is rendered by
+# Builds a Developer ID signed release of fauxtoe into build/release/: the user
+# manual as a PDF, a zip holding the app and the manual, and a disk image holding
+# the app, the manual and a link to /Applications. The manual is rendered by
 # scripts/render-manual.sh, which needs pandoc and node and stops the release if
 # docs/user-manual.md isn't marked with this version.
 #
@@ -63,13 +63,15 @@ if [ -n "${NOTARY_PROFILE:-}" ]; then
     rm "$out/upload.zip"
     xcrun stapler staple "$app"
 fi
-ditto -c -k --keepParent "$app" "$zip"
-
+# The app and the manual, side by side at the top of both the zip and the disk
+# image.
 staging="$out/dmg"
 mkdir "$staging"
 ditto "$app" "$staging/fauxtoe.app"
-ln -s /Applications "$staging/Applications"
 cp "$manual" "$staging/fauxtoe User Manual.pdf"
+ditto -c -k "$staging" "$zip"
+
+ln -s /Applications "$staging/Applications"
 hdiutil create -quiet -volname fauxtoe -srcfolder "$staging" -fs HFS+ \
     -format UDZO -ov "$dmg"
 rm -rf "$staging"
