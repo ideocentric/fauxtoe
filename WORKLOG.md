@@ -103,3 +103,15 @@
 - Keyframe re-shooting: whether re-shot frames overwrite, insert or branch (this decides numbering); whether the onion skin shows the keyframe only or the frames before it too; whether re-shot frames must match the keyframe's camera setup. All recorded in `docs/roadmap.md`.
 - Carried over: the resolution fix and the best-effort camera adjustments are verified on one camera only; manual screenshots deferred.
 **Next step:** None scheduled. To resume the roadmap, decide in-app versus separate app for playback, using the questions in `docs/roadmap.md`, before any design work.
+
+## 2026-10-06 11:42: Security sweep (gate mode, whole tree)
+**Completed:** First security sweep, run as a gate over the whole tree at `8706f1a` (the code is unchanged since v1.1). Findings are kept in a local-only ledger, `discovery/`, which is git-excluded so undisclosed details stay off this public repo.
+- Sources run: npm audit of the PDF renderer's build tooling (0 vulnerabilities, 3 packages, none shipped); trivy secret scan of the tree (clean, with the scanner shown working by a planted canary); git history secret grep (clean); signing and entitlement check of the shipped app (sandboxed, hardened runtime, notarized, five entitlements, Apple frameworks only, no network access); manual code review (file naming and sanitizing, onion skin file loading, save path, logging, metadata, release scripts).
+- Skipped: Dependabot alerts, which are disabled on the repo.
+- Not applicable: Swift packages, Python, container images (none exist).
+- Records: 8 in all. 4 low findings (2 code hardening, 1 privacy, 1 build chain), 3 low coverage gaps (Dependabot alerts, secret scanning, code scanning), 1 verified control. No critical, high or medium. None overdue.
+- Gate verdict: FAIL, solely because the Dependabot source was skipped; no finding blocks on severity.
+
+**In flight:** none.
+**Open questions:** Enabling Dependabot alerts and secret scanning (with push protection) on the repo is a settings change awaiting go-ahead. Dispositions for the 4 low findings are awaiting the user's decision (fix or accept).
+**Next step:** With go-ahead, enable Dependabot alerts and secret scanning on `ideocentric/fauxtoe` (repo Settings > Code security), then re-run `/security-sweep gate` so the Dependabot source runs and the gate can pass.
