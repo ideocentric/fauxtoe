@@ -79,3 +79,9 @@
 - Focus and exposure with the device lock held: checked on the test camera, which offers both; its continuous auto focus and exposure keep adjusting. Decided: camera adjustments are best effort, with no per-camera work; noted in the README's Limitations.
 
 **Next step:** Decide the squash and merge order, then merge to `main` over SSH as ideocentric and, if releasing, follow the release steps in the 2026-09-24 20:07 entry.
+
+## 2026-10-05 21:43: Release 1.1 published
+**Completed:** `onion-skin` (which includes `resolution-fix`) fast-forwarded into `main` at `b9b009c`; annotated tag `v1.1` pushed over SSH as ideocentric. `NOTARY_PROFILE=fauxtoe scripts/release.sh` built 1.1 (build 2); Apple accepted the app and the DMG, both stapled. The DMG and the zip each hold `fauxtoe.app` and `fauxtoe User Manual.pdf` (the DMG also an Applications link). GitHub release "fauxtoe 1.1" at https://github.com/ideocentric/fauxtoe/releases/tag/v1.1 with `fauxtoe-1.1.dmg`, `fauxtoe-1.1.zip` and `fauxtoe-1.1-user-manual.pdf`; `releases/latest` points to it. All three downloaded anonymously match the local build (SHA-256 DMG `584c3d17…f4502d`, zip `d01ce3a4…f5333a`, PDF `87c67fd7…6bfb2`), and the downloaded DMG passes Gatekeeper with quarantine set. `gh` was switched to ideocentric for the release and restored to simplicit-mc.
+**In flight:** none.
+**Open questions:** Local branches `onion-skin` and `resolution-fix` are fully merged and can be deleted.
+**Next step:** None scheduled. For the next release: update `Version` in `docs/user-manual.md` along with `MARKETING_VERSION`/`CURRENT_PROJECT_VERSION` (release.sh stops otherwise), then run `NOTARY_PROFILE=fauxtoe scripts/release.sh`, tag, push, and create the release with gh switched to ideocentric and restored after.
