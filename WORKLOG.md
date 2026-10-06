@@ -85,3 +85,12 @@
 **In flight:** none.
 **Open questions:** Local branches `onion-skin` and `resolution-fix` are fully merged and can be deleted.
 **Next step:** None scheduled. For the next release: update `Version` in `docs/user-manual.md` along with `MARKETING_VERSION`/`CURRENT_PROJECT_VERSION` (release.sh stops otherwise), then run `NOTARY_PROFILE=fauxtoe scripts/release.sh`, tag, push, and create the release with gh switched to ideocentric and restored after.
+
+## 2026-10-05 22:44: Checkpoint after release 1.1
+**Completed:** Release 1.1 is public (https://github.com/ideocentric/fauxtoe/releases/tag/v1.1): onion skin, the Resolution menu fix, and the user manual (`docs/user-manual.md`, shipped as a PDF in the DMG and the zip). `main` at `bb65610` is pushed; tag `v1.1` is at `b9b009c`. Local branches `onion-skin` and `resolution-fix` were merged and deleted, which closes the open question in the 21:43 entry. Working tree clean.
+**In flight:** none.
+**Open questions:**
+- The resolution fix is verified on one camera only (4:3 formats, then a 16:9 check reported working). Other cameras are untested.
+- Camera adjustments are best effort; checked on the test camera only.
+- Manual screenshots were deferred to a later release.
+**Next step:** None scheduled. For the next release, set `Version <new>` in `docs/user-manual.md` and raise `MARKETING_VERSION`/`CURRENT_PROJECT_VERSION` in `fauxtoe.xcodeproj` (`scripts/release.sh` stops if they differ), then run `NOTARY_PROFILE=fauxtoe scripts/release.sh`, watch for the Keychain prompt from codesign, tag, push over SSH, and create the release with gh switched to ideocentric and restored after.
