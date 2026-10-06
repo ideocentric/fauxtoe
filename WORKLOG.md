@@ -94,3 +94,12 @@
 - Camera adjustments are best effort; checked on the test camera only.
 - Manual screenshots were deferred to a later release.
 **Next step:** None scheduled. For the next release, set `Version <new>` in `docs/user-manual.md` and raise `MARKETING_VERSION`/`CURRENT_PROJECT_VERSION` in `fauxtoe.xcodeproj` (`scripts/release.sh` stops if they differ), then run `NOTARY_PROFILE=fauxtoe scripts/release.sh`, watch for the Keychain prompt from codesign, tag, push over SSH, and create the release with gh switched to ideocentric and restored after.
+
+## 2026-10-05 23:04: Roadmap started; context files updated
+**Completed:** `docs/roadmap.md` added and pushed (`2387822`), recording two undesigned ideas: stop motion playback (in fauxtoe or a separate app, undecided) and re-shooting from a keyframe. Context updated: `CLAUDE.local.md` now covers the size logging, the user manual and the release requirements (not tracked by git); global `~/.claude/CLAUDE.md` gained the pandoc-to-Chromium PDF route (`7d26f3c` in `~/.claude`).
+**In flight:** none.
+**Open questions:**
+- Playback: build into fauxtoe, or a separate app?
+- Keyframe re-shooting: whether re-shot frames overwrite, insert or branch (this decides numbering); whether the onion skin shows the keyframe only or the frames before it too; whether re-shot frames must match the keyframe's camera setup. All recorded in `docs/roadmap.md`.
+- Carried over: the resolution fix and the best-effort camera adjustments are verified on one camera only; manual screenshots deferred.
+**Next step:** None scheduled. To resume the roadmap, decide in-app versus separate app for playback, using the questions in `docs/roadmap.md`, before any design work.
