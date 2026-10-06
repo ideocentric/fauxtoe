@@ -5,7 +5,10 @@ desk: a USB webcam over a circuit board, a camera on a desktop microscope, or a
 setup for product shots. It works like Photo Booth, minus the effects, plus the
 things you want for documentation work: full-resolution capture, lossless
 formats, quick file naming, rotation for oddly mounted cameras, and interval
-shooting for stop motion and time-lapse.
+shooting and onion skin for stop motion and time-lapse.
+
+The [User Manual](docs/user-manual.md) covers everything in detail. A PDF copy
+is attached to each release.
 
 ## Features
 
@@ -65,6 +68,8 @@ Tools, prefix the command with
 `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
 
 ## Using fauxtoe
+
+A summary follows; the [User Manual](docs/user-manual.md) has the full detail.
 
 ### Keyboard shortcuts
 
