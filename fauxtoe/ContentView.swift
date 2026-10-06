@@ -42,6 +42,8 @@ struct ContentView: View {
             Text(model.errorMessage ?? "")
         }
         .task { await model.start() }
+        // Every route to a new camera, resolution, rotation or mirroring passes through here.
+        .onChange(of: model.frameGeometry) { model.cameraSetupChanged() }
         .onChange(of: model.flashCount) {
             flashOpacity = 1
             withAnimation(.easeOut(duration: 0.35)) { flashOpacity = 0 }
@@ -58,7 +60,7 @@ struct ContentView: View {
                 mirrored: preferences.mirrored,
                 configurationID: model.configurationID,
                 onClick: model.controls.supportsPointOfInterest ? { model.focus(at: $0) } : nil,
-                skins: preferences.onionSkinEnabled ? Array(model.onionSkins.prefix(preferences.onionSkinLayers)) : [],
+                skins: Array(model.visibleOnionSkins.prefix(preferences.onionSkinLayers)),
                 skinOpacity: preferences.onionSkinOpacity)
                 .opacity(model.cameraState == .ready ? 1 : 0)
 
@@ -112,6 +114,15 @@ struct ContentView: View {
                 Label("Mirror", systemImage: "arrow.left.and.right.righttriangle.left.righttriangle.right")
             }
             .help("Flip the image horizontally")
+
+            Toggle(isOn: Binding(
+                get: { preferences.onionSkinEnabled },
+                set: { model.setOnionSkin($0) }
+            )) {
+                Label("Onion Skin", systemImage: "square.stack")
+            }
+            .help("Show the last frames over the preview, for stop motion")
+            .disabled(model.isShootingInterval)
 
             Button {
                 preferences.showControls.toggle()

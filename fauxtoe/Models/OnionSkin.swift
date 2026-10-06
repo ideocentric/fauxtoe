@@ -10,6 +10,24 @@ import CoreGraphics
 import Foundation
 import ImageIO
 
+/// What decides how a frame lines up with the preview. Frames taken with a different camera, resolution,
+/// rotation or mirroring don't line up with the current view, so a change to any of them starts a new
+/// keyframe sequence.
+nonisolated struct FrameGeometry: Codable, Equatable, Sendable {
+    var cameraID: String
+    var formatKey: String
+    /// Clockwise degrees, as `Rotation.rawValue`.
+    var rotation: Int
+    var mirrored: Bool
+}
+
+/// The sequence the saved frames belong to, remembered across launches so resuming can tell whether
+/// the last frames still line up.
+nonisolated struct OnionSkinSequence: Codable, Equatable, Sendable {
+    var root: String
+    var geometry: FrameGeometry
+}
+
 /// Onion skinning: previous frames of a stop motion sequence drawn faintly over the live preview.
 nonisolated enum OnionSkin {
     /// Frames kept in memory, whatever the layer setting, so raising it shows frames straight away.
@@ -20,6 +38,14 @@ nonisolated enum OnionSkin {
         rotation.swapsDimensions
             ? CGSize(width: format.photoHeight, height: format.photoWidth)
             : CGSize(width: format.photoWidth, height: format.photoHeight)
+    }
+
+    /// Whether the last frames of the sequence named `root` can be shown again with the camera set up
+    /// as `geometry`. With no record for that sequence (first use, or files from before the record was
+    /// kept), the frame size check in `framesToLoad` is all there is to go on.
+    static func canResume(_ sequence: OnionSkinSequence?, root: String, geometry: FrameGeometry) -> Bool {
+        guard let sequence, sequence.root.lowercased() == root.lowercased() else { return true }
+        return sequence.geometry == geometry
     }
 
     /// Which of a sequence's files (newest first, with their pixel sizes) to show again when onion

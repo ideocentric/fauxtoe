@@ -31,6 +31,7 @@ final class Preferences {
         static let onionSkinOpacity = "onionSkinOpacity"
         static let onionSkinLayers = "onionSkinLayers"
         static let onionSkinRoot = "onionSkinRoot"
+        static let onionSkinSequence = "onionSkinSequence"
     }
 
     @ObservationIgnored private let defaults: UserDefaults
@@ -129,6 +130,12 @@ final class Preferences {
 
     /// The sequence number the next photo would get, without consuming it.
     var peekSequenceNumber: Int { max(1, defaults.integer(forKey: Key.sequence)) }
+
+    /// The camera setup the current onion skin sequence was shot with.
+    var onionSkinSequence: OnionSkinSequence? {
+        get { defaults.data(forKey: Key.onionSkinSequence).flatMap { try? JSONDecoder().decode(OnionSkinSequence.self, from: $0) } }
+        set { defaults.set(newValue.flatMap { try? JSONEncoder().encode($0) }, forKey: Key.onionSkinSequence) }
+    }
 
     var lastCameraID: String? {
         get { defaults.string(forKey: Key.lastCameraID) }

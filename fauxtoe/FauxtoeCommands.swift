@@ -63,6 +63,15 @@ struct FauxtoeCommands: Commands {
 
             Divider()
 
+            Toggle("Onion Skin", isOn: Binding(
+                get: { preferences.onionSkinEnabled },
+                set: { model.setOnionSkin($0) }
+            ))
+            .keyboardShortcut("o", modifiers: [.command, .option])
+            .disabled(model.isShootingInterval)
+
+            Divider()
+
             Picker("Interval", selection: Bindable(preferences).intervalSeconds) {
                 ForEach(Preferences.intervalChoices, id: \.self) { seconds in
                     Text(Preferences.intervalTitle(seconds)).tag(seconds)

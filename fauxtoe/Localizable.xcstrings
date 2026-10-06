@@ -1,36 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    ".%@" : {
-      "comment" : "File extension shown after the name field",
-      "shouldTranslate" : false
-    },
-    "·" : {
-      "comment" : "Separator",
-      "shouldTranslate" : false
-    },
-    "“%@” is no longer in %@. It was moved or deleted outside fauxtoe, so it has been removed from recent photos." : {
-      "comment" : "Arguments: the file name, then its folder",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "“%1$@” is no longer in %2$@. It was moved or deleted outside fauxtoe, so it has been removed from recent photos."
-          }
-        }
-      }
-    },
-    "%@ · %@" : {
-      "comment" : "Photo size (width × height), then file format",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ · %2$@"
-          }
-        }
-      }
-    },
     "%@ (%@ MP)" : {
       "comment" : "Resolution menu item. Arguments: width × height, then megapixels",
       "localizations" : {
@@ -44,6 +14,17 @@
     },
     "%@ is lossless, which suits detail shots of boards and components. Files are larger." : {
 
+    },
+    "%@ · %@" : {
+      "comment" : "Photo size (width × height), then file format",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
     },
     "%lld photos" : {
       "comment" : "Interval shooting badge: photos taken so far",
@@ -67,6 +48,10 @@
           }
         }
       }
+    },
+    ".%@" : {
+      "comment" : "File extension shown after the name field",
+      "shouldTranslate" : false
     },
     "90° Clockwise" : {
 
@@ -98,22 +83,25 @@
     "Camera name" : {
       "comment" : "Naming token description"
     },
+    "Camera preview with onion skin" : {
+      "comment" : "Accessibility label for the preview while previous frames are shown over it"
+    },
     "Capture" : {
 
     },
     "Choose" : {
       "comment" : "Button that confirms the chosen save folder"
     },
-    "Choose a camera" : {
-
-    },
-    "Choose a resolution" : {
-
-    },
     "Choose Save Folder" : {
 
     },
     "Choose Save Folder…" : {
+
+    },
+    "Choose a camera" : {
+
+    },
+    "Choose a resolution" : {
 
     },
     "Choose…" : {
@@ -166,13 +154,6 @@
     "Exposure" : {
 
     },
-    "fauxtoe" : {
-      "comment" : "App name",
-      "shouldTranslate" : false
-    },
-    "fauxtoe {date} at {time}" : {
-      "comment" : "Default file name template. Keep the {date} and {time} tokens exactly as written; translate the rest."
-    },
     "File format" : {
 
     },
@@ -190,9 +171,6 @@
     },
     "Hide Camera Controls" : {
 
-    },
-    "image" : {
-      "comment" : "Default name root for numbered file names (image-001). Lowercase, one word, no spaces."
     },
     "Image" : {
 
@@ -234,10 +212,10 @@
     "Mirror" : {
 
     },
-    "Mirror image" : {
+    "Mirror Image" : {
 
     },
-    "Mirror Image" : {
+    "Mirror image" : {
 
     },
     "Move to Trash" : {
@@ -261,8 +239,8 @@
     "Next file" : {
 
     },
-    "next in %llds" : {
-      "comment" : "Interval shooting badge: seconds until the next photo"
+    "Next frame" : {
+
     },
     "No Camera Connected" : {
 
@@ -277,6 +255,12 @@
 
     },
     "Older Photos" : {
+
+    },
+    "Onion Skin" : {
+
+    },
+    "Opacity" : {
 
     },
     "Open" : {
@@ -338,10 +322,39 @@
     "Saving to %@" : {
 
     },
+    "Sequence" : {
+
+    },
     "Sequence number, e.g. 0007" : {
       "comment" : "Naming token description"
     },
+    "Show %lld frames" : {
+      "comment" : "Onion skin: how many previous frames are shown",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Show %lld frame"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Show %lld frames"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Show Camera Controls" : {
+
+    },
+    "Show Save Folder in Finder" : {
 
     },
     "Show in Finder" : {
@@ -356,7 +369,10 @@
     "Show or hide camera controls" : {
 
     },
-    "Show Save Folder in Finder" : {
+    "Show the last frames over the preview, for stop motion" : {
+
+    },
+    "Shows the last frames faintly over the preview. Photos save as a numbered sequence without asking for a name, and numbering carries on from the folder. Changing the camera, resolution, rotation or mirroring starts a new sequence." : {
 
     },
     "Single Photo" : {
@@ -396,19 +412,22 @@
     "Stop interval shooting (Space or ⌘.)" : {
 
     },
+    "Take Photo" : {
+
+    },
     "Take a photo (Space or ⌘T)" : {
 
     },
     "Take a single photo, or a photo every few seconds for stop motion and time-lapse" : {
 
     },
-    "Take Photo" : {
-
-    },
     "Template" : {
 
     },
     "Template tokens" : {
+
+    },
+    "The Camera Isn't Available" : {
 
     },
     "The camera can't take still photos." : {
@@ -423,11 +442,11 @@
     "The camera is no longer available." : {
 
     },
-    "The Camera Isn't Available" : {
-
-    },
     "The camera stopped unexpectedly." : {
 
+    },
+    "The camera, resolution, rotation or mirroring changed, so the earlier frames are hidden and a new sequence starts with %@." : {
+      "comment" : "Onion skin note. The argument is the next file name, whose numbering carries on"
     },
     "The photo couldn't be encoded as %@." : {
       "comment" : "The argument is a file format, e.g. HEIC"
@@ -471,11 +490,11 @@
         }
       }
     },
-    "This camera doesn't offer focus, exposure or white balance controls to macOS apps." : {
-
-    },
     "This Mac can't write %@ files." : {
       "comment" : "The argument is a file format, e.g. HEIC"
+    },
+    "This camera doesn't offer focus, exposure or white balance controls to macOS apps." : {
+
     },
     "Time, e.g. 14.05.32" : {
       "comment" : "Naming token description"
@@ -500,6 +519,37 @@
     },
     "With an interval set, the shutter takes a photo right away, then another at that interval until you stop it (Space or ⌘.). Use it for stop motion and time-lapse. Interval photos save without asking for a name; Name and number naming gives a tidy frame sequence." : {
 
+    },
+    "fauxtoe" : {
+      "comment" : "App name",
+      "shouldTranslate" : false
+    },
+    "fauxtoe {date} at {time}" : {
+      "comment" : "Default file name template. Keep the {date} and {time} tokens exactly as written; translate the rest."
+    },
+    "frame" : {
+      "comment" : "Default name root for onion skin sequences (frame-001). Lowercase, one word, no spaces."
+    },
+    "image" : {
+      "comment" : "Default name root for numbered file names (image-001). Lowercase, one word, no spaces."
+    },
+    "next in %llds" : {
+      "comment" : "Interval shooting badge: seconds until the next photo"
+    },
+    "·" : {
+      "comment" : "Separator",
+      "shouldTranslate" : false
+    },
+    "“%@” is no longer in %@. It was moved or deleted outside fauxtoe, so it has been removed from recent photos." : {
+      "comment" : "Arguments: the file name, then its folder",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "“%1$@” is no longer in %2$@. It was moved or deleted outside fauxtoe, so it has been removed from recent photos."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

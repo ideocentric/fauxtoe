@@ -130,6 +130,16 @@ struct PreferencesTests {
         #expect(reloaded.effectiveOnionSkinRoot == "walk-cycle")
     }
 
+    @Test func onionSkinSequencePersists() {
+        let defaults = freshDefaults()
+        let preferences = Preferences(defaults: defaults)
+        #expect(preferences.onionSkinSequence == nil)
+        let sequence = OnionSkinSequence(
+            root: "walk", geometry: FrameGeometry(cameraID: "cam-a", formatKey: "640x480/640x480", rotation: 90, mirrored: true))
+        preferences.onionSkinSequence = sequence
+        #expect(Preferences(defaults: defaults).onionSkinSequence == sequence)
+    }
+
     @Test func onionSkinValuesOutOfRangeAreClamped() {
         let defaults = freshDefaults()
         defaults.set(9, forKey: "onionSkinLayers")
@@ -161,6 +171,29 @@ struct OnionSkinTests {
 
     @Test func emptyFolderLoadsNothing() {
         #expect(OnionSkin.framesToLoad([], frameSize: size).isEmpty)
+    }
+
+    private let setup = FrameGeometry(cameraID: "cam-a", formatKey: "1920x1440/1920x1440", rotation: 0, mirrored: false)
+
+    @Test func resumesOnlyWithTheSameSetup() {
+        let sequence = OnionSkinSequence(root: "walk", geometry: setup)
+        #expect(OnionSkin.canResume(sequence, root: "walk", geometry: setup))
+        #expect(OnionSkin.canResume(sequence, root: "WALK", geometry: setup))
+
+        var mirrored = setup; mirrored.mirrored = true
+        var otherCamera = setup; otherCamera.cameraID = "cam-b"
+        var rotated = setup; rotated.rotation = 90
+        var otherFormat = setup; otherFormat.formatKey = "640x480/640x480"
+        for changed in [mirrored, otherCamera, rotated, otherFormat] {
+            #expect(!OnionSkin.canResume(sequence, root: "walk", geometry: changed))
+        }
+    }
+
+    @Test func withoutARecordTheSizeCheckDecides() {
+        #expect(OnionSkin.canResume(nil, root: "walk", geometry: setup))
+        let other = OnionSkinSequence(root: "run", geometry: setup)
+        var changed = setup; changed.cameraID = "cam-b"
+        #expect(OnionSkin.canResume(other, root: "walk", geometry: changed))
     }
 
     @Test func olderLayersFade() {
@@ -277,6 +310,12 @@ struct LocalizationTests {
                                   videoHeight: 1080, maxFrameRate: 30)
         #expect(format.title == "1920 × 1080 (2.1 MP)")
         #expect(format.detail == "Preview at 30 fps")
+    }
+
+    @Test func onionSkinFrameCountUsesPluralForms() {
+        #expect(String(localized: "Show \(1) frames", comment: "Onion skin: how many previous frames are shown") == "Show 1 frame")
+        #expect(String(localized: "Show \(3) frames", comment: "Onion skin: how many previous frames are shown") == "Show 3 frames")
+        #expect(FileNaming.defaultOnionSkinRoot == "frame")
     }
 
     @Test func modelTextIsLocalized() {

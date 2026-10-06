@@ -62,6 +62,8 @@ final class AppModel {
     private(set) var recentPhotos: [SavedPhoto] = []
     /// The last saved frames of the onion skin sequence, newest first, at preview resolution.
     private(set) var onionSkins: [CGImage] = []
+    /// The camera setup `onionSkins` were taken with; they are only shown while it still applies.
+    private(set) var onionSkinGeometry: FrameGeometry?
     /// Says why onion skinning started a new sequence instead of showing the previous frames.
     private(set) var onionSkinNotice: String?
     var pendingPhoto: PendingPhoto?
@@ -90,9 +92,19 @@ final class AppModel {
 
     var isShootingInterval: Bool { intervalShotCount != nil }
 
-    /// Camera, resolution, rotation and mirroring can't change while onion skinning, because the
-    /// previous frames would no longer line up with the preview.
-    var isConfigurationLocked: Bool { preferences.onionSkinEnabled }
+    /// The camera setup a photo taken now would have. Nil until a camera is running.
+    var frameGeometry: FrameGeometry? {
+        guard let selectedDeviceID, let format = activeFormat else { return nil }
+        return FrameGeometry(cameraID: selectedDeviceID, formatKey: format.key,
+                             rotation: preferences.rotation.rawValue, mirrored: preferences.mirrored)
+    }
+
+    /// The onion skin frames to draw: none once the camera setup has changed, since they would no
+    /// longer line up with the preview.
+    var visibleOnionSkins: [CGImage] {
+        guard preferences.onionSkinEnabled, let onionSkinGeometry, onionSkinGeometry == frameGeometry else { return [] }
+        return onionSkins
+    }
 
     var canCapture: Bool {
         cameraState == .ready && !isReconfiguring && !isCapturing && !isShootingInterval && pendingPhoto == nil
@@ -142,12 +154,12 @@ final class AppModel {
     }
 
     func chooseDevice(_ id: String) {
-        guard id != selectedDeviceID, !isConfigurationLocked else { return }
+        guard id != selectedDeviceID else { return }
         Task { await selectDevice(id) }
     }
 
     func chooseFormat(_ formatID: Int) {
-        guard formatID != activeFormatID, !isReconfiguring, !isConfigurationLocked else { return }
+        guard formatID != activeFormatID, !isReconfiguring else { return }
         Task {
             isReconfiguring = true
             defer { isReconfiguring = false }
@@ -206,11 +218,6 @@ final class AppModel {
                 refreshDevices()
                 if let selectedDeviceID, !devices.contains(where: { $0.id == selectedDeviceID }) {
                     self.selectedDeviceID = nil
-                    // Falling back to another camera would break the lock, so end onion skinning first.
-                    if preferences.onionSkinEnabled {
-                        setOnionSkin(false)
-                        errorMessage = String(localized: "The camera was disconnected, so onion skinning has been turned off. Turn it on again to continue the sequence; numbering carries on where it left off.")
-                    }
                     if let fallback = CaptureEngine.preferredDeviceID() ?? devices.first?.id {
                         await selectDevice(fallback)
                     } else {
@@ -384,6 +391,7 @@ final class AppModel {
             let image = pending.image
             let metadata = pending.metadata
             let skinSize = preferences.onionSkinEnabled ? onionSkinPixelSize : nil
+            let geometry = frameGeometry
             let (thumbnail, skin) = try await Task.detached { () throws -> (CGImage?, CGImage?) in
                 let data = try PhotoRenderer.encode(image, metadata: metadata, as: format, quality: quality)
                 try data.write(to: url, options: .atomic)
@@ -394,10 +402,14 @@ final class AppModel {
             // Oldest first, so the newest photo sits at the right end of the strip.
             recentPhotos.append(SavedPhoto(url: url, thumbnail: thumbnail))
             if recentPhotos.count > Self.maxRecentPhotos { recentPhotos.removeFirst() }
-            if let skin, preferences.onionSkinEnabled {
+            if let skin, let geometry, preferences.onionSkinEnabled {
+                // Frames from another setup belong to the previous sequence.
+                if geometry != onionSkinGeometry { onionSkins = [] }
                 onionSkins.insert(skin, at: 0)
                 if onionSkins.count > OnionSkin.maxFrames { onionSkins.removeLast() }
+                onionSkinGeometry = geometry
                 onionSkinNotice = nil
+                preferences.onionSkinSequence = OnionSkinSequence(root: preferences.effectiveOnionSkinRoot, geometry: geometry)
             }
             return true
         } catch {
@@ -458,8 +470,26 @@ final class AppModel {
         guard on != preferences.onionSkinEnabled, !isShootingInterval else { return }
         preferences.onionSkinEnabled = on
         onionSkins = []
+        onionSkinGeometry = nil
         onionSkinNotice = nil
         if on { Task { await resumeOnionSkin() } }
+    }
+
+    /// Called when the camera, resolution, rotation or mirroring changes. The frames so far no longer
+    /// line up with the preview, so they are dropped and the next photo starts a new keyframe
+    /// sequence. Numbering carries on.
+    func cameraSetupChanged() {
+        guard preferences.onionSkinEnabled, let onionSkinGeometry, onionSkinGeometry != frameGeometry else { return }
+        onionSkins = []
+        self.onionSkinGeometry = nil
+        announceNewSequence()
+    }
+
+    private func announceNewSequence() {
+        let next = nextDefaultName()
+        onionSkinNotice = String(
+            localized: "The camera, resolution, rotation or mirroring changed, so the earlier frames are hidden and a new sequence starts with \(next).",
+            comment: "Onion skin note. The argument is the next file name, whose numbering carries on")
     }
 
     /// Skins are kept at the preview's resolution: the preview can't show more detail than that.
@@ -467,14 +497,15 @@ final class AppModel {
         activeFormat.map { max($0.videoWidth, $0.videoHeight) }
     }
 
-    /// Loads the sequence's last frames from the save folder as skins, if they are the size this
-    /// camera and resolution produce. If not, this is a new keyframe sequence: no skins, but the
-    /// numbering still continues.
+    /// Loads the sequence's last frames from the save folder as skins, if they were taken with this
+    /// camera setup. If not, this is a new keyframe sequence: no skins, but the numbering continues.
     private func resumeOnionSkin() async {
-        guard preferences.onionSkinEnabled, let format = activeFormat, let skinSize = onionSkinPixelSize else { return }
+        guard preferences.onionSkinEnabled, let format = activeFormat, let skinSize = onionSkinPixelSize,
+              let geometry = frameGeometry else { return }
         let folder = saveLocation.folderURL
         let root = preferences.effectiveOnionSkinRoot
         let frameSize = OnionSkin.frameSize(of: format, rotation: preferences.rotation)
+        let sameSetup = OnionSkin.canResume(preferences.onionSkinSequence, root: root, geometry: geometry)
         let (loaded, foundAny) = await Task.detached {
             let names = (try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []
             let files = FileNaming.numberedFiles(root: root, in: names)
@@ -483,21 +514,18 @@ final class AppModel {
                     let url = folder.appendingPathComponent(file.name)
                     return (url, OnionSkin.pixelSize(of: url))
                 }
-            let skins = OnionSkin.framesToLoad(Array(files), frameSize: frameSize).compactMap { url in
+            let skins = !sameSetup ? [] : OnionSkin.framesToLoad(Array(files), frameSize: frameSize).compactMap { url in
                 CGImageSourceCreateWithURL(url as CFURL, nil).flatMap { OnionSkin.image(from: $0, maxPixelSize: skinSize) }
             }
             return (skins, !files.isEmpty)
         }.value
 
-        // Turned off, or a frame was saved while loading: the newer state wins.
-        guard preferences.onionSkinEnabled, onionSkins.isEmpty, root == preferences.effectiveOnionSkinRoot else { return }
+        // Turned off, a frame saved, or the setup changed while loading: the newer state wins.
+        guard preferences.onionSkinEnabled, onionSkins.isEmpty, root == preferences.effectiveOnionSkinRoot,
+              geometry == frameGeometry else { return }
         onionSkins = loaded
-        if foundAny && loaded.isEmpty {
-            let next = nextDefaultName()
-            onionSkinNotice = String(
-                localized: "The last frames are a different size from this camera's, so a new sequence starts with \(next).",
-                comment: "Shown when onion skinning resumes with another camera or resolution. The argument is the next file name")
-        }
+        onionSkinGeometry = loaded.isEmpty ? nil : geometry
+        if foundAny && loaded.isEmpty { announceNewSequence() }
     }
 
     // MARK: - Recent photos

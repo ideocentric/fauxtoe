@@ -109,6 +109,10 @@ struct ControlsInspector: View {
                 }
             }
 
+            Section("Onion Skin") {
+                OnionSkinControls(model: model)
+            }
+
             Section("Saving") {
                 SaveFolderControls(saveLocation: model.saveLocation)
                 Picker("Format", selection: Bindable(preferences).fileFormat) {
