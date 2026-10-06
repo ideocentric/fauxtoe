@@ -3,7 +3,10 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
 # Builds a Developer ID signed release of fauxtoe into build/release/: a zip of
-# the app, and a disk image holding the app beside a link to /Applications.
+# the app, the user manual as a PDF, and a disk image holding the app, a link to
+# /Applications and the manual. The manual is rendered by
+# scripts/render-manual.sh, which needs pandoc and node and stops the release if
+# docs/user-manual.md isn't marked with this version.
 #
 # Day-to-day builds sign with the project's own team. This script overrides the
 # team and identity so the release is signed with "Developer ID Application"
@@ -46,6 +49,11 @@ codesign --verify --deep --strict "$app"
 version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app/Contents/Info.plist")"
 zip="$out/fauxtoe-$version.zip"
 dmg="$out/fauxtoe-$version.dmg"
+manual="$out/fauxtoe-$version-user-manual.pdf"
+
+# Before notarizing, so an out-of-date manual stops the release before anything
+# is sent to Apple.
+scripts/render-manual.sh "$version" "$manual"
 
 # The app is notarized and stapled before it goes into the zip and the disk
 # image, so the copy a user drags out opens without a network check.
@@ -61,13 +69,14 @@ staging="$out/dmg"
 mkdir "$staging"
 ditto "$app" "$staging/fauxtoe.app"
 ln -s /Applications "$staging/Applications"
+cp "$manual" "$staging/fauxtoe User Manual.pdf"
 hdiutil create -quiet -volname fauxtoe -srcfolder "$staging" -fs HFS+ \
     -format UDZO -ov "$dmg"
 rm -rf "$staging"
 codesign --sign "$identity: Matthew Comeione ($team)" --timestamp "$dmg"
 
 if [ -z "${NOTARY_PROFILE:-}" ]; then
-    echo "Signed, not notarized: $zip, $dmg"
+    echo "Signed, not notarized: $zip, $dmg (manual: $manual)"
     exit 0
 fi
 
@@ -75,4 +84,4 @@ notarize "$dmg"
 xcrun stapler staple "$dmg"
 spctl --assess --type execute --verbose=2 "$app"
 spctl --assess --type open --context context:primary-signature --verbose=2 "$dmg"
-echo "Signed and notarized: $zip, $dmg"
+echo "Signed and notarized: $zip, $dmg (manual: $manual)"
