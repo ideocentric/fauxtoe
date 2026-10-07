@@ -115,3 +115,19 @@
 **In flight:** none.
 **Open questions:** Enabling Dependabot alerts and secret scanning (with push protection) on the repo is a settings change awaiting go-ahead. Dispositions for the 4 low findings are awaiting the user's decision (fix or accept).
 **Next step:** With go-ahead, enable Dependabot alerts and secret scanning on `ideocentric/fauxtoe` (repo Settings > Code security), then re-run `/security-sweep gate` so the Dependabot source runs and the gate can pass.
+
+## 2026-10-06 17:09: Security fixes; gate passes on branch security-fixes
+**Completed:** The user enabled Dependabot alerts and security updates on the repo, and secret scanning; the alerts source now runs (no open alerts). The four low findings from the 11:42 sweep are fixed on branch `security-fixes` (local, not merged, not pushed), one commit each; every commit builds and passes the unit tests on its own:
+- `3aabdf2`: a numbered series counts only photo files (heic, jpg/jpeg, png, tiff/tif), so onion skin never hands another file type to ImageIO.
+- `50c8fcc`: saving never replaces an existing file, even one created by another app at the same moment (exclusive rename, next free name on conflict).
+- `211b33a`: Settings > Saving, "Include camera name and time zone in photos", default on.
+- `7e3c83c`: the manual's PDF tooling installs from a committed lockfile with `npm ci --ignore-scripts`.
+- `a9a6807`: user manual and README updated for these.
+Gate re-run at `a9a6807`: PASS (all sources ran; no critical, high or medium findings; nothing overdue). Findings stay in the local-only ledger in `discovery/`; the four fixes are marked in progress there until a release containing them ships.
+
+**In flight:** `security-fixes` is unmerged and unreleased; the shipped 1.1 still has the old behaviour.
+**Open questions:**
+- Secret scanning push protection is still off; enabling it would block a secret at push time.
+- Code scanning (CodeQL for Swift needs a macOS runner) is optional and not set up.
+- The manual still says `Version 1.1` and its "What's new" section covers 1.1; both need updating with the next release.
+**Next step:** Merge `security-fixes` into `main` (fast-forward) and push over SSH as ideocentric. For a release, set the version in the project and the manual (1.1.1 or 1.2), add a "What's new" entry, run `NOTARY_PROFILE=fauxtoe scripts/release.sh`, then rescan the shipped app and mark the four ledger records remediated.
