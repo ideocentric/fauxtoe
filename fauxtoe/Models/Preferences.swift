@@ -21,6 +21,7 @@ final class Preferences {
         static let nameRoot = "nameRoot"
         static let sequence = "nextSequenceNumber"
         static let playShutterSound = "playShutterSound"
+        static let includeCameraMetadata = "includeCameraMetadata"
         static let intervalSeconds = "timerSeconds" // the old timer's key; its values are valid intervals
         static let mirrored = "mirrored"
         static let rotation = "rotation"
@@ -45,6 +46,9 @@ final class Preferences {
     /// The root for `.numbered` names, as typed. Use `effectiveNameRoot` when building a file name.
     var nameRoot: String { didSet { defaults.set(nameRoot, forKey: Key.nameRoot) } }
     var playShutterSound: Bool { didSet { defaults.set(playShutterSound, forKey: Key.playShutterSound) } }
+    /// Whether saved photos record the camera's name and the time zone offset. Off leaves only the
+    /// capture time and the software name.
+    var includeCameraMetadata: Bool { didSet { defaults.set(includeCameraMetadata, forKey: Key.includeCameraMetadata) } }
     /// Seconds between photos in an interval run; 0 takes a single photo.
     var intervalSeconds: Int { didSet { defaults.set(intervalSeconds, forKey: Key.intervalSeconds) } }
     var mirrored: Bool { didSet { defaults.set(mirrored, forKey: Key.mirrored) } }
@@ -86,6 +90,7 @@ final class Preferences {
             Key.namingScheme: NamingScheme.template.rawValue,
             Key.sequence: 1,
             Key.playShutterSound: true,
+            Key.includeCameraMetadata: true,
             Key.intervalSeconds: 0,
             Key.mirrored: false,
             Key.rotation: 0,
@@ -101,6 +106,7 @@ final class Preferences {
         namingScheme = NamingScheme(rawValue: defaults.string(forKey: Key.namingScheme) ?? "") ?? .template
         nameRoot = defaults.string(forKey: Key.nameRoot) ?? FileNaming.defaultRoot
         playShutterSound = defaults.bool(forKey: Key.playShutterSound)
+        includeCameraMetadata = defaults.bool(forKey: Key.includeCameraMetadata)
         intervalSeconds = defaults.integer(forKey: Key.intervalSeconds)
         mirrored = defaults.bool(forKey: Key.mirrored)
         rotation = Rotation(rawValue: defaults.integer(forKey: Key.rotation)) ?? .none

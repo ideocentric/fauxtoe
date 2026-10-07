@@ -59,6 +59,9 @@
     "90° Counterclockwise" : {
 
     },
+    "A camera's name can identify you or your Mac. The time each photo was taken is always recorded. A naming template with {camera} still puts the name in the file name." : {
+
+    },
     "Adjustments" : {
 
     },
@@ -173,6 +176,9 @@
 
     },
     "Image" : {
+
+    },
+    "Include camera name and time zone in photos" : {
 
     },
     "Interval" : {

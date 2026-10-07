@@ -157,6 +157,7 @@ struct PreferencesTests {
         #expect(preferences.onionSkinOpacity == 0.4)
         #expect(preferences.onionSkinLayers == 1)
         #expect(preferences.effectiveOnionSkinRoot == "frame")
+        #expect(preferences.includeCameraMetadata)
     }
 
     @Test func onionSkinSettingsPersist() {
@@ -324,6 +325,26 @@ struct PhotoRendererTests {
     @Test func mirrors() {
         let mirrored = PhotoRenderer.orient(sample(), rotation: .none, mirrored: true)
         #expect(isRed(mirrored, x: 3, y: 0))
+    }
+
+    @Test func cameraNameAndTimeZoneCanBeLeftOut() throws {
+        let data = try PhotoRenderer.encode(
+            sample(), metadata: PhotoRenderer.metadata(date: .now, camera: "Matt's Camera", includeCamera: false),
+            as: .jpeg, quality: 0.9)
+        let source = try #require(CGImageSourceCreateWithData(data as CFData, nil))
+        let properties = try #require(CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [String: Any])
+        let tiff = properties[kCGImagePropertyTIFFDictionary as String] as? [String: Any]
+        let exif = properties[kCGImagePropertyExifDictionary as String] as? [String: Any]
+        #expect(tiff?[kCGImagePropertyTIFFModel as String] == nil)
+        #expect(exif?[kCGImagePropertyExifOffsetTimeOriginal as String] == nil)
+        #expect(exif?[kCGImagePropertyExifDateTimeOriginal as String] != nil)
+        #expect(tiff?[kCGImagePropertyTIFFSoftware as String] as? String == "fauxtoe")
+        // The name must not survive anywhere in the file. The same search finds it when it is written,
+        // so its absence here means something.
+        #expect(data.range(of: Data("Matt's Camera".utf8)) == nil)
+        let withCamera = try PhotoRenderer.encode(
+            sample(), metadata: PhotoRenderer.metadata(date: .now, camera: "Matt's Camera"), as: .jpeg, quality: 0.9)
+        #expect(withCamera.range(of: Data("Matt's Camera".utf8)) != nil)
     }
 
     @Test(arguments: ImageFileFormat.available)

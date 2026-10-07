@@ -31,25 +31,31 @@ nonisolated enum PhotoRenderer {
     }
 
     /// EXIF and TIFF fields recording when and with what the photo was taken. macOS doesn't hand
-    /// back the camera's own metadata, so this is written from what the app knows.
-    static func metadata(date: Date, camera: String) -> [String: Any] {
+    /// back the camera's own metadata, so this is written from what the app knows. Without
+    /// `includeCamera`, the camera's name (which can identify a person or a machine) and the time
+    /// zone offset are left out; the capture time and the software name stay.
+    static func metadata(date: Date, camera: String, includeCamera: Bool = true) -> [String: Any] {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy:MM:dd HH:mm:ss"
         let stamp = formatter.string(from: date)
         formatter.dateFormat = "xxx"
         let offset = formatter.string(from: date)
+        var exif: [String: Any] = [
+            kCGImagePropertyExifDateTimeOriginal as String: stamp,
+            kCGImagePropertyExifDateTimeDigitized as String: stamp,
+        ]
+        var tiff: [String: Any] = [
+            kCGImagePropertyTIFFDateTime as String: stamp,
+            kCGImagePropertyTIFFSoftware as String: "fauxtoe",
+        ]
+        if includeCamera {
+            exif[kCGImagePropertyExifOffsetTimeOriginal as String] = offset
+            tiff[kCGImagePropertyTIFFModel as String] = camera
+        }
         return [
-            kCGImagePropertyExifDictionary as String: [
-                kCGImagePropertyExifDateTimeOriginal as String: stamp,
-                kCGImagePropertyExifDateTimeDigitized as String: stamp,
-                kCGImagePropertyExifOffsetTimeOriginal as String: offset,
-            ],
-            kCGImagePropertyTIFFDictionary as String: [
-                kCGImagePropertyTIFFDateTime as String: stamp,
-                kCGImagePropertyTIFFModel as String: camera,
-                kCGImagePropertyTIFFSoftware as String: "fauxtoe",
-            ],
+            kCGImagePropertyExifDictionary as String: exif,
+            kCGImagePropertyTIFFDictionary as String: tiff,
         ]
     }
 

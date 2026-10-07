@@ -56,6 +56,14 @@ private struct SavingSettings: View {
             }
 
             Section {
+                Toggle("Include camera name and time zone in photos", isOn: $preferences.includeCameraMetadata)
+            } footer: {
+                Text("A camera's name can identify you or your Mac. The time each photo was taken is always recorded. A naming template with {camera} still puts the name in the file name.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section {
                 NamingControls(model: model, showsTemplateHelp: true)
                 Toggle("Ask for a name after each photo", isOn: $preferences.askForName)
             } footer: {

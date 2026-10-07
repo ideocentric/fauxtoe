@@ -348,7 +348,7 @@ final class AppModel {
                 : defaultName
             let pending = PendingPhoto(
                 image: image,
-                metadata: PhotoRenderer.metadata(date: date, camera: camera),
+                metadata: PhotoRenderer.metadata(date: date, camera: camera, includeCamera: preferences.includeCameraMetadata),
                 defaultName: defaultName,
                 suggestedName: suggestedName)
 
