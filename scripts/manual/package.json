@@ -1,0 +1,9 @@
+{
+  "name": "fauxtoe-manual-tools",
+  "private": true,
+  "description": "Renders docs/user-manual.md to PDF for releases (scripts/render-manual.sh). Not shipped.",
+  "license": "AGPL-3.0-or-later",
+  "dependencies": {
+    "playwright": "1.60.0"
+  }
+}

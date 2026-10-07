@@ -10,11 +10,15 @@
 # Refuses to run unless the manual's "Version" line matches <version>, so a
 # release can't ship last version's manual.
 #
-# Needs pandoc and node. Playwright is installed into build/manual-tools, pinned
-# to a version whose Chromium is already in ~/Library/Caches/ms-playwright, so
-# no browser is downloaded. If that build is missing, raise or lower
-# PLAYWRIGHT_VERSION until `require('playwright').chromium.executablePath()`
-# names a file that exists.
+# Needs pandoc and node. Playwright is installed into build/manual-tools from
+# the committed scripts/manual/package-lock.json with `npm ci --ignore-scripts`:
+# exact versions checked against their integrity hashes, and no package install
+# scripts run on the machine that holds the signing key. The version is pinned to
+# one whose Chromium is already in ~/Library/Caches/ms-playwright, so no browser
+# is downloaded. To change it, edit scripts/manual/package.json, regenerate the
+# lockfile there with `npm install --package-lock-only --ignore-scripts`, and
+# check that `require('playwright').chromium.executablePath()` names a file that
+# exists.
 set -eu
 
 cd "$(dirname "$0")/.."
@@ -26,17 +30,18 @@ case "$2" in
 esac
 manual=docs/user-manual.md
 tools=build/manual-tools
-: "${PLAYWRIGHT_VERSION:=1.60.0}"
 
 if ! grep -qx "Version $version" "$manual"; then
     echo "error: $manual does not say \"Version $version\"; update it for this release" >&2
     exit 1
 fi
 
-if [ ! -d "$tools/node_modules/playwright" ]; then
+# Reinstall whenever the committed lockfile differs from the one installed.
+if ! cmp -s scripts/manual/package-lock.json "$tools/package-lock.json"; then
+    rm -rf "$tools"
     mkdir -p "$tools"
-    (cd "$tools" && npm init -y >/dev/null &&
-        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install --silent "playwright@$PLAYWRIGHT_VERSION")
+    cp scripts/manual/package.json scripts/manual/package-lock.json "$tools/"
+    (cd "$tools" && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci --ignore-scripts --no-audit --no-fund --silent)
 fi
 (cd "$tools" && node -e "
 const path = require('playwright').chromium.executablePath();
