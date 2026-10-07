@@ -60,7 +60,10 @@ nonisolated enum FileNaming {
 
     /// Makes a user-typed name safe to use as a file name: no path separators, no leading dots, no
     /// surrounding whitespace, and no extension the user may have typed out of habit.
-    static func sanitize(_ name: String, stripping extensions: [String] = ImageFileFormat.allCases.map(\.fileExtension) + ["jpeg", "tif"]) -> String {
+    /// Extensions of the image files fauxtoe writes, plus their common spellings.
+    static let imageExtensions = ImageFileFormat.allCases.map(\.fileExtension) + ["jpeg", "tif"]
+
+    static func sanitize(_ name: String, stripping extensions: [String] = imageExtensions) -> String {
         var result = name.trimmingCharacters(in: .whitespacesAndNewlines)
         let lower = result.lowercased()
         if let ext = extensions.first(where: { lower.hasSuffix("." + $0) }) {
@@ -107,13 +110,16 @@ nonisolated enum FileNaming {
         numberedFiles(root: root, in: fileNames).first?.number ?? 0
     }
 
-    /// The files named `root-N.<ext>`, compared case-insensitively, highest N first. Files sharing a
-    /// number (the same frame saved in two formats) are ordered by name, so the result is stable.
+    /// The image files named `root-N.<ext>`, compared case-insensitively, highest N first. Files sharing
+    /// a number (the same frame saved in two formats) are ordered by name, so the result is stable.
+    /// Only image extensions count: onion skin hands these files to ImageIO, so anything else in the
+    /// folder must not be parsed, and a stray non-image file must not move the numbering on.
     static func numberedFiles(root: String, in fileNames: [String]) -> [(name: String, number: Int)] {
         let prefix = root.lowercased() + "-"
         return fileNames.compactMap { fileName -> (name: String, number: Int)? in
             let stem = (fileName as NSString).deletingPathExtension.lowercased()
-            guard stem != fileName.lowercased(), stem.hasPrefix(prefix) else { return nil }
+            let fileExtension = (fileName as NSString).pathExtension.lowercased()
+            guard imageExtensions.contains(fileExtension), stem.hasPrefix(prefix) else { return nil }
             let digits = stem.dropFirst(prefix.count)
             guard !digits.isEmpty, digits.allSatisfy({ $0.isASCII && $0.isNumber }), let number = Int(digits) else { return nil }
             return (fileName, number)

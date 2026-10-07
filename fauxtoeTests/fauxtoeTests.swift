@@ -76,6 +76,8 @@ struct FileNamingTests {
             "imagename-099",          // no extension
             "otherroot-500.jpg",
             "imagename-extra-900.jpg",
+            "imagename-800.txt",      // not an image
+            "imagename-700.pdf",      // not a format fauxtoe writes
             ".DS_Store",
         ]
         #expect(FileNaming.highestNumber(root: "imagename", in: files) == 7)
@@ -86,10 +88,11 @@ struct FileNamingTests {
     }
 
     @Test func numberedFilesAreNewestFirst() {
-        let files = ["walk-002.jpg", "walk-010.heic", "walk-001.jpg", "walk-002 2.jpg", "run-011.jpg", "walk-010.jpg"]
+        let files = ["walk-002.jpg", "walk-010.heic", "walk-001.jpg", "walk-002 2.jpg", "run-011.jpg", "walk-010.jpg",
+                     "walk-050.svg", "walk-040.TIF", "walk-030"]
         let found = FileNaming.numberedFiles(root: "walk", in: files)
-        #expect(found.map(\.name) == ["walk-010.heic", "walk-010.jpg", "walk-002.jpg", "walk-001.jpg"])
-        #expect(found.map(\.number) == [10, 10, 2, 1])
+        #expect(found.map(\.name) == ["walk-040.TIF", "walk-010.heic", "walk-010.jpg", "walk-002.jpg", "walk-001.jpg"])
+        #expect(found.map(\.number) == [40, 10, 10, 2, 1])
     }
 
     @Test func uniqueURLNeverReusesAnExistingName() {
