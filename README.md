@@ -157,7 +157,8 @@ frames back only if they were taken with the same camera setup.
   when a camera has nothing to adjust. Direct UVC control would need a separate
   USB implementation.
 - **The camera's own photo metadata is not available on macOS.** fauxtoe writes
-  the capture time, camera name and software name into each file instead.
+  the capture time, camera name and software name into each file instead. The
+  camera name and time zone can be left out in Settings › Saving.
 - **Zoom and exposure compensation are not available** in AVFoundation on macOS.
 - **Camera adjustments are best effort.** fauxtoe passes focus, exposure and
   white balance requests to the camera through macOS, and how a camera responds

@@ -210,10 +210,17 @@ macOS doesn't pass on a camera's own photo metadata, so fauxtoe records what it
 knows: the date and time the photo was taken (with the time zone offset), the
 camera's name, and fauxtoe as the software.
 
+A camera's name can identify you or your Mac. To leave the camera's name and
+the time zone offset out of your photos, turn off **Include camera name and
+time zone in photos** in Settings › Saving. The time each photo was taken and
+the software name are always recorded. A naming template that uses `{camera}`
+still puts the camera's name in the file name.
+
 ### Existing files are never overwritten
 
 If a name is already taken, fauxtoe adds a number: `name 2.jpg`, `name 3.jpg`,
-and so on.
+and so on. This holds even if another app creates a file with the same name at
+the moment fauxtoe saves.
 
 ## Naming photos
 
@@ -245,9 +252,9 @@ the default name ends the series.
 
 Names are a root you choose (by default `image`) plus a three-digit number:
 `image-001`, `image-002`, and so on. The number goes past 999 as needed
-(`image-1000`). Numbering continues from the highest number already in the
-save folder, so a series picks up where it left off after you quit and reopen
-fauxtoe.
+(`image-1000`). Numbering continues from the highest number among the photos
+already in the save folder (files in HEIC, JPEG, PNG or TIFF), so a series picks
+up where it left off after you quit and reopen fauxtoe.
 
 Name and number naming suits frame sequences: stop motion and video tools can
 import `scene-001`, `scene-002`, ... directly.
@@ -396,6 +403,7 @@ Open Settings with **fauxtoe › Settings…** (⌘,).
 **Saving**
 - **Folder**, with **Choose…**, **Show in Finder** and **Use Default**.
 - **File format**, and **Quality** for HEIC and JPEG.
+- **Include camera name and time zone in photos**.
 - **Naming**: the scheme, the template or name, **Template tokens**, **Restore
   Default Template**, and **Next file**.
 - **Ask for a name after each photo**.
@@ -406,7 +414,7 @@ Open Settings with **fauxtoe › Settings…** (⌘,).
 - **Rotation** and **Mirror image**.
 
 Everything in Settings is also in the controls panel, except Quality, the
-shutter sound and the template help. Onion skin settings are in the controls
+camera name and time zone option, the shutter sound and the template help. Onion skin settings are in the controls
 panel only.
 
 ## Menus and keyboard shortcuts
@@ -484,7 +492,8 @@ Report problems at
   exposure and white balance requests is up to its driver. Some cameras may
   ignore a request, or keep adjusting on their own.
 - **The camera's own photo metadata isn't available on macOS.** fauxtoe writes
-  the capture time, camera name and software name instead.
+  the capture time, camera name and software name instead. The camera name can
+  be left out (Settings › Saving).
 - **Zoom and exposure compensation aren't available** to macOS camera apps.
 
 ## Privacy
