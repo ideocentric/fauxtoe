@@ -387,16 +387,16 @@ final class AppModel {
         let quality = preferences.quality
         do {
             let folder = try saveLocation.prepareFolder()
-            let url = FileNaming.uniqueURL(in: folder, baseName: baseName, fileExtension: format.fileExtension)
             let image = pending.image
             let metadata = pending.metadata
             let skinSize = preferences.onionSkinEnabled ? onionSkinPixelSize : nil
             let geometry = frameGeometry
-            let (thumbnail, skin) = try await Task.detached { () throws -> (CGImage?, CGImage?) in
+            let (url, thumbnail, skin) = try await Task.detached { () throws -> (URL, CGImage?, CGImage?) in
                 let data = try PhotoRenderer.encode(image, metadata: metadata, as: format, quality: quality)
-                try data.write(to: url, options: .atomic)
-                guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return (nil, nil) }
-                return (OnionSkin.image(from: source, maxPixelSize: Self.thumbnailPixelSize),
+                // Never replaces an existing file, even one created after the name was chosen.
+                let url = try NewFile.write(data, in: folder, baseName: baseName, fileExtension: format.fileExtension)
+                guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return (url, nil, nil) }
+                return (url, OnionSkin.image(from: source, maxPixelSize: Self.thumbnailPixelSize),
                         skinSize.flatMap { OnionSkin.image(from: source, maxPixelSize: $0) })
             }.value
             // Oldest first, so the newest photo sits at the right end of the strip.

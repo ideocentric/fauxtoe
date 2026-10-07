@@ -103,6 +103,46 @@ struct FileNamingTests {
     }
 }
 
+struct NewFileTests {
+    private func makeFolder() throws -> URL {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        return folder
+    }
+
+    private func contents(of folder: URL) -> [String] {
+        ((try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []).sorted()
+    }
+
+    @Test func writesANewFile() throws {
+        let folder = try makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appendingPathComponent("shot.jpg")
+        try NewFile.write(Data("new".utf8), to: url)
+        #expect(try Data(contentsOf: url) == Data("new".utf8))
+        #expect(contents(of: folder) == ["shot.jpg"])
+    }
+
+    @Test func neverReplacesAnExistingFile() throws {
+        let folder = try makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appendingPathComponent("shot.jpg")
+        try Data("original".utf8).write(to: url)
+        #expect(throws: POSIXError(.EEXIST)) { try NewFile.write(Data("new".utf8), to: url) }
+        #expect(try Data(contentsOf: url) == Data("original".utf8))
+        #expect(contents(of: folder) == ["shot.jpg"]) // no temporary file left behind
+    }
+
+    @Test func aTakenNameMovesToTheNextNumber() throws {
+        let folder = try makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        try Data("original".utf8).write(to: folder.appendingPathComponent("shot.jpg"))
+        let url = try NewFile.write(Data("new".utf8), in: folder, baseName: "shot", fileExtension: "jpg")
+        #expect(url.lastPathComponent == "shot 2.jpg")
+        #expect(try Data(contentsOf: folder.appendingPathComponent("shot.jpg")) == Data("original".utf8))
+    }
+}
+
 struct PreferencesTests {
     private func freshDefaults() -> UserDefaults {
         let name = "fauxtoeTests.\(UUID().uuidString)"
